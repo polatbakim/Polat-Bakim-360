@@ -1,0 +1,48 @@
+name: Publish Polat Bakım 360
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check Supabase publishable configuration
+        env:
+          SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+          SUPABASE_PUBLISHABLE_KEY: ${{ vars.SUPABASE_PUBLISHABLE_KEY }}
+        run: |
+          test -n "$SUPABASE_URL" || { echo 'SUPABASE_URL repository variable is missing'; exit 1; }
+          test -n "$SUPABASE_PUBLISHABLE_KEY" || { echo 'SUPABASE_PUBLISHABLE_KEY repository variable is missing'; exit 1; }
+          case "$SUPABASE_URL" in https://*.supabase.co) ;; *) echo 'Invalid Supabase URL'; exit 1;; esac
+      - name: Stage only public files
+        env:
+          SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+          SUPABASE_PUBLISHABLE_KEY: ${{ vars.SUPABASE_PUBLISHABLE_KEY }}
+        run: |
+          mkdir -p _site/vendor _site/icons
+          cp .nojekyll index.html operator.html manifest.webmanifest app.js styles.css avatar-alignment.css completion-time.css fault-catalog.css supabase-cloud.js sw.js _site/
+          cp vendor/qrcode.min.js vendor/xlsx.full.min.js _site/vendor/
+          cp icons/polat-bakim.svg _site/icons/
+          node -e 'const fs=require("fs"); fs.writeFileSync("_site/supabase-config.js", "window.POLAT_BAKIM_CONFIG="+JSON.stringify({supabaseUrl:process.env.SUPABASE_URL,supabasePublishableKey:process.env.SUPABASE_PUBLISHABLE_KEY,workspaceId:"polat-bakim-main",syncEnabled:true,requireCloud:true})+";\n")'
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4
