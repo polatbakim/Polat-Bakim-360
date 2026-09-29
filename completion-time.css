@@ -1,0 +1,9 @@
+.completion-time-button{display:block;width:100%;min-height:36px;padding:9px 11px;border:1px solid var(--line-strong);border-radius:7px;background:#fff;color:var(--text);font:inherit;text-align:left;cursor:pointer}
+.completion-time-button:hover,.completion-time-button:focus-visible{border-color:var(--teal);outline:2px solid transparent;box-shadow:0 0 0 2px rgba(0,165,145,.13)}
+.completion-time-button:disabled{cursor:not-allowed}
+#completionTimeModal{z-index:130}
+#completionTimeForm{width:min(460px,100%)}
+.completion-time-grid{display:grid;grid-template-columns:1fr 90px 90px;gap:10px}
+.completion-time-grid label{display:grid;gap:5px;min-width:0;font-size:9px;font-weight:700}
+.completion-time-grid input,.completion-time-grid select{width:100%;min-height:38px;border:1px solid var(--line-strong);border-radius:7px;padding:8px;background:#fff;color:var(--text);font:inherit;font-size:11px}
+@media(max-width:460px){.completion-time-grid{grid-template-columns:1fr 1fr}.completion-time-grid label:first-child{grid-column:1/-1}}

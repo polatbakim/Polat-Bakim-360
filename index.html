@@ -1,0 +1,618 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Polat Bakım 360</title>
+  <meta name="description" content="Kurumsal bakım, varlık ve iş emri yönetim sistemi">
+  <meta name="theme-color" content="#0b8174">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="styles.css?v=20260929-supabase-release-v1">
+  <link rel="stylesheet" href="fault-catalog.css?v=20260929-time-save">
+  <link rel="stylesheet" href="completion-time.css?v=20260929-time-save">
+  <link rel="stylesheet" href="avatar-alignment.css?v=20260929-avatar-center">
+</head>
+<body class="access-locked">
+  <section class="access-gateway" id="accessGateway" aria-labelledby="accessGatewayTitle">
+    <div class="access-gateway-card">
+      <header><div class="access-brand-mark">P</div><div><small>POLAT BAKIM 360</small><h1 id="accessGatewayTitle">Programa Giriş</h1><p>Yetkinizi seçin ve kişisel şifrenizle devam edin.</p></div></header>
+      <div class="access-role-choice" id="accessRoleChoice"><button type="button" data-access-role="operator"><span>✓</span><strong>Operatörüm</strong><small>Yalnızca bana atanan iş emirleri</small></button><button type="button" data-access-role="manager"><span>◆</span><strong>Yöneticiyim</strong><small>İş emirleri, maliyet, stok ve raporlar</small></button></div>
+      <form class="access-login-form hidden" id="accessLoginForm">
+        <button type="button" class="access-back" id="accessBackBtn">← Rol seçimine dön</button>
+        <div class="access-selected-role"><span id="accessRoleIcon">✓</span><div><small>SEÇİLEN GİRİŞ</small><strong id="accessRoleTitle">Operatör</strong></div></div>
+        <input type="hidden" name="role" value="operator">
+        <label>E-posta adresi<input name="userId" id="accessUserSelect" type="email" required autocomplete="username" placeholder="ad.soyad@firma.com"></label>
+        <label>Şifre<div class="access-password"><input name="password" id="accessPassword" type="password" minlength="4" required autocomplete="current-password" placeholder="Şifrenizi girin"><button type="button" id="accessPasswordToggle">Göster</button></div></label>
+        <p class="access-error hidden" id="accessError" role="alert"></p>
+        <button type="submit" class="primary-btn access-submit">Giriş Yap</button>
+      </form>
+    </div>
+  </section>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-mobile-actions"><button type="button" id="sidebarBackBtn" aria-label="Menüden geri dön">← Geri</button></div>
+      <div class="brand">
+        <div class="brand-mark"><span>P</span></div>
+        <div><strong>POLAT BAKIM</strong><span>Varlık Yönetim Sistemi</span></div>
+      </div>
+
+      <nav class="nav" aria-label="Ana menü">
+        <p class="nav-label">KONTROL MERKEZİ</p>
+        <button class="nav-item active" data-view="dashboard"><span class="nav-icon">⌂</span>Dashboard</button>
+        <button class="nav-item" data-view="scada"><span class="nav-icon">◉</span>Arızalı Duruş SCADA <b id="navScadaCount">0</b></button>
+
+        <p class="nav-label">İŞ YÖNETİMİ</p>
+        <button class="nav-item" data-view="requests"><span class="nav-icon">◎</span>İş Talepleri <b id="navRequestCount">0</b></button>
+        <button class="nav-item" data-view="orders"><span class="nav-icon">▤</span>İş Emirleri <b id="navOpenCount">0</b></button>
+        <button class="nav-item" data-view="planned"><span class="nav-icon">▦</span>Planlı Bakım</button>
+
+        <p class="nav-label">VARLIK YÖNETİMİ</p>
+        <button class="nav-item" data-view="assets"><span class="nav-icon">◇</span>Makine Bakım Kartları</button>
+        <button class="nav-item" data-view="stock"><span class="nav-icon">▧</span>Malzeme &amp; Stok</button>
+        <button class="nav-item" data-view="budget"><span class="nav-icon">₺</span>Bütçe &amp; Satın Alma</button>
+
+        <p class="nav-label">SAHA UYGULAMASI</p>
+        <button class="nav-item operator-nav" data-view="operator"><span class="nav-icon">✓</span>Operatör Sayfası <span class="nav-count" id="navOperatorCount">0</span></button>
+
+        <p class="nav-label">ORGANİZASYON</p>
+        <button class="nav-item manager-nav" data-view="manager"><span class="nav-icon">◆</span>Yönetici Onayları <span class="nav-count" id="navManagerCount">0</span></button>
+        <button class="nav-item" data-view="technicians"><span class="nav-icon">♙</span>Personel</button>
+        <button class="nav-item" data-view="access"><span class="nav-icon">⚿</span>Giriş Yetkileri</button>
+        <button class="nav-item" data-view="analytics"><span class="nav-icon">▥</span>Esnek Analiz</button>
+        <button class="nav-item" data-view="reports"><span class="nav-icon">↗</span>Raporlar &amp; Analiz</button>
+      </nav>
+
+      <div class="sidebar-source">
+        <span class="live-dot"></span>
+        <div><strong>Veri kaynağı aktif</strong><span id="sidebarSource">Bakım Form.csv</span></div>
+        <button type="button" id="cloudConnectionBtn" class="cloud-connection-btn">Yerel</button>
+      </div>
+      <div class="sidebar-foot">
+        <div class="user-avatar" id="sidebarSessionAvatar">—</div>
+        <div><strong id="sidebarSessionName">Oturum</strong><span id="sidebarSessionRole">Yetki bekleniyor</span></div>
+        <button class="sidebar-more" id="roleLogoutBtn" aria-label="Oturumu kapat">Çıkış</button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div class="page-heading">
+          <button class="icon-btn menu-btn" id="menuBtn" aria-label="Menüyü aç" aria-controls="sidebar" aria-expanded="false">☰</button>
+          <div><p class="breadcrumb">Bakım Yönetimi / <span id="breadcrumbText">Dashboard</span></p><h1 id="pageTitle">Dashboard</h1></div>
+        </div>
+        <div class="top-actions">
+          <label class="global-search"><span>⌕</span><input id="globalSearch" type="search" placeholder="Kayıtlarda ara..."></label>
+          <div class="notification-area">
+            <button type="button" class="icon-btn notification-btn" id="notificationBtn" aria-label="Bildirimler" aria-expanded="false" aria-controls="notificationPanel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="13" r="7.5"/><path d="M12 9v4l2.5 1.5M5 3 2.5 5.5M19 3l2.5 2.5M5.5 20l1.8-1.8M18.5 20l-1.8-1.8"/></svg><b id="notificationCount" class="hidden">0</b></button>
+            <div class="notification-panel hidden" id="notificationPanel" role="region" aria-label="Bildirimler">
+              <div class="notification-head"><strong>Bildirimler</strong><button type="button" class="icon-btn" id="notificationCloseBtn" aria-label="Bildirimleri kapat">×</button></div>
+              <div class="notification-list" id="notificationList"></div>
+            </div>
+          </div>
+          <button type="button" class="primary-btn open-request-modal"><span>＋</span> Talep Oluştur</button>
+        </div>
+      </header>
+
+      <section class="view" id="noAccessView"><div class="panel form-section"><h2>Sayfa erişimi tanımlı değil</h2><p>Bu yönetici hesabı için Admin Yönetici tarafından görülebilecek sayfalar seçilmelidir.</p></div></section>
+
+      <section class="view active" id="dashboardView">
+        <div class="welcome-row">
+          <div><h2>Bakım operasyon özeti</h2><p id="todayText"></p></div>
+          <div class="period-control"><button class="active">Bugün</button><button>Bu Hafta</button><button>Bu Ay</button></div>
+        </div>
+        <div class="stats-grid" id="statsGrid"></div>
+
+        <section class="panel follow-up-panel">
+          <div class="panel-head"><div><h2>Takip Edilecek Konular</h2><p>Aranacak kişiler, görüşülecek işler, termin ve onay takipleri</p></div><div class="follow-up-head-actions"><select id="followUpOwnerFilter" aria-label="Sorumlu yönetici filtresi"></select><select id="followUpStatusFilter" aria-label="Takip durumu filtresi"><option value="open">Açık Takipler</option><option value="all">Tümü</option><option value="completed">Tamamlananlar</option></select><button class="primary-btn" id="addFollowUpBtn">＋ Takip Ekle</button></div></div>
+          <div class="follow-up-summary" id="followUpSummary"></div>
+          <div class="follow-up-list" id="followUpList"></div>
+          <div class="empty-state hidden" id="followUpEmpty"><span>✓</span><h3>Takip edilecek konu yok</h3><p>Aranacak, görüşülecek veya termin alınacak konuları buraya ekleyin.</p></div>
+        </section>
+
+        <section class="panel monthly-capacity-panel">
+          <div class="panel-head"><div><h2>Aylık Personel ve Arıza Görünümü</h2><p>Onaylı gerçek çalışma takvimi, arıza duruşları ve personel bakım kapasitesi</p></div><div class="capacity-head-actions"><label>Ay<input type="month" id="capacityMonthPicker"></label><button class="secondary-btn" id="openFactoryCalendarModal">Fabrika Takvimini Ayarla</button><button class="primary-btn" id="openCapacityModal">Personel Saatlerini Gir</button></div></div>
+          <div class="capacity-summary-grid" id="monthlyCapacitySummary"></div>
+          <div class="capacity-person-list" id="monthlyCapacityList"></div>
+          <div class="monthly-machine-section"><div class="monthly-machine-head"><div><h3>Makine Bakım Kartları · Yaklaşan Bakımlar</h3><p>Makine kartlarındaki son bakım ve periyot bilgisine göre hesaplanır</p></div><button class="secondary-btn" data-go="assets">Tüm Makine Kartları</button></div><div class="monthly-machine-list" id="monthlyMachineList"></div></div>
+        </section>
+
+        <div class="dashboard-grid primary-grid">
+          <section class="panel chart-panel">
+            <div class="panel-head"><div><h2>İş Emri Durumu</h2><p>Açık operasyonların anlık dağılımı</p></div><button class="panel-action" data-go="orders">Detayları aç →</button></div>
+            <div class="status-overview"><div class="donut-wrap"><div class="donut" id="statusDonut"><div><strong id="donutTotal">0</strong><span>Açık İş</span></div></div><div class="donut-legend" id="donutLegend"></div></div><div class="mini-trend"><p>Son 12 aylık iş yoğunluğu</p><div class="spark-bars" id="monthlySpark"></div></div></div>
+          </section>
+          <section class="panel priority-panel">
+            <div class="panel-head"><div><h2>Öncelikli İşler</h2><p>Acil ve gecikmiş kayıtlar</p></div><span class="live-label">CANLI</span></div>
+            <div class="priority-list" id="priorityList"></div>
+          </section>
+        </div>
+
+        <div class="dashboard-grid secondary-grid">
+          <section class="panel">
+            <div class="panel-head"><div><h2>Bakım Planı</h2><p>Yaklaşan ve geciken planlı işler</p></div><button class="panel-action" data-go="planned">Takvime git →</button></div>
+            <div class="schedule-list" id="scheduleList"></div>
+          </section>
+          <section class="panel">
+            <div class="panel-head"><div><h2>Personel İş Yükü</h2><p>Açık iş emirlerine göre kapasite</p></div><button class="panel-action" data-go="technicians">Ekibi gör →</button></div>
+            <div class="workload-list" id="workloadList"></div>
+          </section>
+          <section class="panel">
+            <div class="panel-head"><div><h2>Son Hareketler</h2><p>Operasyon kayıt akışı</p></div></div>
+            <div class="activity-list" id="activityList"></div>
+          </section>
+        </div>
+      </section>
+
+      <section class="view" id="scadaView">
+        <div class="view-intro"><div><h2>Arızalı Duruş SCADA</h2><p>Makineleri bölüm planlarına yerleştirin; çalışan ve duruşta olan noktaları canlı pano gibi takip edin.</p></div><button class="primary-btn" id="scadaAddMachineBtn">＋ Makine Noktası Ekle</button></div>
+        <div class="scada-stats" id="scadaStats"></div>
+        <section class="panel scada-control-panel">
+          <div class="panel-head"><div><h2>Bölüm Layoutları</h2><p>Talaşlı imalat, kaynak ve montaj planlarını ayrı yönetin.</p></div><div class="scada-plan-actions" id="scadaPlanActions"></div></div>
+          <label class="scada-search"><span>⌕</span><input id="scadaSearch" type="search" placeholder="PT numarası veya makine adı ara..."></label>
+          <div class="scada-dept-tabs" id="scadaDeptTabs"></div>
+        </section>
+        <div id="scadaWorkspace"></div>
+        <div id="scadaSelection"></div>
+        <section class="panel scada-stop-panel"><div class="panel-head"><div><h2>Duruştaki Makineler</h2><p>Kırmızı durumdaki makine noktaları</p></div></div><div id="scadaStoppedList"></div></section>
+      </section>
+
+      <section class="view" id="requestsView">
+        <div class="view-intro"><div><h2>İş Talepleri</h2><p>Sahadan gelen bakım taleplerini değerlendirin ve iş emrine dönüştürün.</p></div><button class="primary-btn" id="newRequestBtn">＋ Yeni Talep</button></div>
+        <div class="stats-strip" id="requestStats"></div>
+        <div class="panel">
+          <div class="table-toolbar"><label class="search-box"><span>⌕</span><input id="requestSearch" type="search" placeholder="Talep, konum veya ekipman ara"></label><select id="requestPriorityFilter"><option value="">Tüm öncelikler</option><option>Yüksek</option><option>Orta</option><option>Düşük</option></select></div>
+          <div class="table-wrap"><table><thead><tr><th>Talep No</th><th>Talep / Ekipman</th><th>Bildirim Numarası</th><th>Bildirim Tarihi</th><th>Öncelik</th><th>Durum</th><th>İşlem</th></tr></thead><tbody id="requestsTable"></tbody></table></div>
+          <div class="empty-state hidden" id="requestsEmpty"><span>✓</span><h3>Bekleyen talep yok</h3><p>Yeni gelen bakım talepleri burada görüntülenecek.</p></div>
+        </div>
+      </section>
+
+      <section class="view" id="ordersView">
+        <div class="view-intro"><div><h2>İş Emirleri</h2><p>Bakım işlerini atayın, çalışma sürelerini ve teknik sonuçları takip edin.</p></div><div class="intro-actions"><button class="danger-btn" id="deleteAllOrdersBtn">🗑 Tümünü Sil</button><button class="secondary-btn" id="exportBtn">⇩ Dışa Aktar</button><button class="primary-btn open-order-modal">＋ İş Emri Oluştur</button></div></div>
+        <div class="order-tabs" id="orderTabs"><button class="active" data-status="">Tümü <span id="tabAll">0</span></button><button data-status="Bekliyor">Atama Yapılmadı <span id="tabWaiting">0</span></button><button data-status="Atandı">Atandı <span id="tabAssigned">0</span></button><button data-status="Devam Ediyor">Devam Eden <span id="tabProgress">0</span></button><button data-status="Beklemede">Beklemede <span id="tabHold">0</span></button><button data-status="Teyit Bekliyor">Teyit Bekleyen <span id="tabConfirmation">0</span></button><button data-status="Tamamlandı">Tamamlanan <span id="tabDone">0</span></button></div>
+        <div class="panel">
+          <div class="active-filter-bar hidden" id="activeFilterBar"><div><span>ETKİLEŞİMLİ SÜZME</span><strong id="activeFilterLabel"></strong><small id="activeFilterInfo"></small></div><button id="clearDrillBtn">Filtreyi Temizle ×</button></div>
+          <div class="table-toolbar"><label class="search-box"><span>⌕</span><input id="orderSearch" type="search" placeholder="İş emri, ekipman veya personel ara"></label><select id="priorityFilter"><option value="">Tüm öncelikler</option><option>Acil</option><option>Yüksek</option><option>Orta</option><option>Düşük</option></select><select id="typeFilter"><option value="">Tüm bakım türleri</option></select><span class="source-pill" id="sourcePill">Bakım Form.csv</span></div>
+          <div class="table-wrap"><table><thead><tr><th>İş Emri</th><th>İş Tanımı</th><th>Makine / Konum</th><th>Sorumlu</th><th>Tarih</th><th>Öncelik</th><th>Maliyet</th><th>Durum</th><th></th></tr></thead><tbody id="allOrders"></tbody></table></div>
+          <div class="load-more-wrap hidden" id="loadMoreWrap"><button class="secondary-btn" id="loadMoreBtn">Daha fazla kayıt göster</button></div>
+          <div class="empty-state hidden" id="ordersEmpty"><span>⌕</span><h3>Kayıt bulunamadı</h3><p>Filtreleri değiştirin veya yeni bir iş emri oluşturun.</p></div>
+        </div>
+      </section>
+
+      <section class="view" id="operatorView">
+        <div class="operator-login-shell" id="operatorLoginShell">
+          <form class="operator-login-card" id="operatorLoginForm">
+            <div class="operator-login-brand"><span>✓</span><div><small>POLAT BAKIM</small><h2>Operatör Girişi</h2><p>Adınızı seçin ve size tanımlanan şifreyle iş emirlerinize ulaşın.</p></div></div>
+            <label>Operatör adı<select id="operatorTechSelect" name="technicianId" required></select></label>
+            <label>Şifre<div class="operator-password-field"><input id="operatorPassword" name="password" type="password" inputmode="numeric" autocomplete="current-password" minlength="4" required placeholder="Şifrenizi girin"><button type="button" id="toggleOperatorPassword" aria-label="Şifreyi göster">Göster</button></div></label>
+            <p class="operator-login-error hidden" id="operatorLoginError" role="alert"></p>
+            <button type="submit" class="primary-btn operator-login-submit">Giriş Yap</button>
+            <small class="operator-login-help">Giriş için Supabase üzerinde tanımlı kişisel hesabınızı kullanın.</small>
+          </form>
+        </div>
+        <div class="operator-workspace hidden" id="operatorWorkspace">
+          <div class="operator-hero">
+            <div><span class="operator-kicker">SAHA UYGULAMASI</span><h2>Operatör İş Emirleri</h2><p>Size atanan işleri görün, başlatın ve tamamladığınız işi yönetici teyidine gönderin.</p></div>
+            <div class="operator-session"><span class="avatar" id="operatorSessionAvatar">—</span><div><small>OTURUM AÇIK</small><strong id="operatorSessionName">Operatör</strong><span id="operatorSessionRole"></span></div><button type="button" class="operator-notification-btn" id="operatorNotificationBtn">🔔 Bildirimleri Aç</button><button type="button" id="operatorLogoutBtn">Çıkış</button></div>
+          </div>
+          <div class="operator-stats" id="operatorStats"></div>
+          <div class="operator-toolbar"><div class="operator-tabs" id="operatorTabs"><button class="active" data-operator-status="">Tümü</button><button data-operator-status="Atandı">Yeni Atanan</button><button data-operator-status="Devam Ediyor">Devam Eden</button><button data-operator-status="Beklemede">Beklemede</button><button data-operator-status="Teyit Bekliyor">Teyit Bekleyen</button></div><label class="search-box operator-search"><span>⌕</span><input id="operatorSearch" type="search" placeholder="İş emri veya ekipman ara"></label></div>
+          <div class="operator-layout"><section><div class="operator-work-list" id="operatorWorkList"></div><div class="empty-state hidden" id="operatorEmpty"><span>✓</span><h3>Bu bölümde iş emri yok</h3><p>Atanan yeni işler burada görüntülenecek.</p></div></section><aside class="operator-guide"><span class="guide-icon">✓</span><h3>Saha iş akışı</h3><ol><li>Atanan işi ve ekipmanı kontrol edin.</li><li><strong>İşe Başla</strong> ile başlangıç saatini kaydedin.</li><li>Arıza ve yapılan işlem bilgilerini doldurun.</li><li>İşi yönetici teyidine gönderin.</li></ol><p>Yönetici teyit verdiğinde iş emri otomatik kapanır.</p></aside></div>
+        </div>
+      </section>
+
+      <section class="view" id="plannedView">
+        <div class="view-intro"><div><h2>Planlı Bakım</h2><p>Koruyucu ve periyodik bakım planlarını tarih ve ekipman bazında izleyin.</p></div><button class="primary-btn" id="newPlanBtn">＋ Bakım Planla</button></div>
+        <div class="stats-grid compact-stats" id="plannedStats"></div>
+        <div class="dashboard-grid planned-grid">
+          <section class="panel"><div class="panel-head"><div><h2>Bakım Takvimi</h2><p id="calendarMonth"></p></div><div class="calendar-nav"><button id="calPrev">‹</button><button id="calToday">Bugün</button><button id="calNext">›</button></div></div><div class="calendar" id="maintenanceCalendar"></div></section>
+          <section class="panel"><div class="panel-head"><div><h2>Planlı İşler</h2><p>Seçili dönemdeki bakım emirleri</p></div></div><div class="planned-list" id="plannedList"></div></section>
+        </div>
+      </section>
+
+      <section class="view" id="assetsView">
+        <div class="view-intro"><div><h2>Makine Varlık Yönetimi</h2><p>Makine sağlığı, güvenilirlik, bakım geçmişi ve kritik yedek parçaları tek karttan yönetin.</p></div><div class="intro-actions"><button class="secondary-btn" id="exportMachineCardsBtn">↧ Yedek Al</button><button class="primary-btn" id="addAssetBtn">＋ Makine Kartı Ekle</button></div></div>
+        <div class="asset-summary" id="assetSummary"></div>
+        <details class="panel asset-unit-cost-panel" id="assetUnitCostPanel"><summary><div><h2>Faaliyet Birimi Maliyetleri</h2><p>Birime tıklayarak o bölümdeki makine kartlarını süzebilirsiniz.</p></div><span class="asset-cost-toggle"><b class="cost-label-closed">Göster</b><b class="cost-label-open">Gizle</b><i>⌄</i></span></summary><div class="table-wrap"><table><thead><tr><th>Faaliyet Birimi</th><th>Makine</th><th>İş Emri</th><th>İşçilik</th><th>Malzeme</th><th>Dış Hizmet</th><th>Diğer</th><th>Toplam</th></tr></thead><tbody id="assetUnitCostTable"></tbody></table></div></details>
+        <section class="panel asset-catalog-panel"><div class="table-toolbar"><label class="search-box"><span>⌕</span><input id="assetSearch" type="search" placeholder="PT kodu, makine, bölüm veya konum ara"></label><select id="assetStatusFilter"><option value="">Tüm durumlar</option><option value="running">Çalışıyor</option><option value="breakdown">Arızalı / Bakımda</option><option value="planned">Planlı Bakımda</option><option value="attention">Kontrol Gerekli</option><option value="offline">Devre Dışı</option></select></div><div class="asset-state-filters" id="assetStateFilters" aria-label="Makine durum filtreleri"></div><div class="machine-maintenance-grid" id="assetCardGrid"></div><table hidden><tbody id="assetsTable"></tbody></table><div class="load-more" id="assetMoreWrap"><button class="secondary-btn" id="assetMoreBtn">Daha Fazla Makine Göster</button></div></section>
+      </section>
+
+      <section class="view" id="maintenanceCardsView">
+        <div class="view-intro"><div><h2>Bakım Kartları</h2><p>Makineye bağlı periyodik kontrol listelerini, ölçümleri ve planlı iş emirlerini yönetin.</p></div><button class="primary-btn" id="addMaintenanceCardBtn">＋ Bakım Kartı Oluştur</button></div>
+        <div class="stats-strip" id="maintenanceCardStats"></div>
+        <div class="panel"><div class="table-toolbar"><label class="search-box"><span>⌕</span><input id="maintenanceCardSearch" type="search" placeholder="Kart, makine veya PT kodu ara"></label><select id="maintenancePeriodFilter"><option value="">Tüm periyotlar</option><option>Günlük</option><option>Haftalık</option><option>Aylık</option><option>3 Aylık</option><option>6 Aylık</option><option>Yıllık</option><option>Özel</option></select><select id="maintenanceCardStatusFilter"><option value="">Tüm durumlar</option><option>Gecikmiş</option><option>Yaklaşıyor</option><option>Planlı</option><option>Pasif</option></select></div><div class="maintenance-card-grid" id="maintenanceCardGrid"></div><div class="empty-state hidden" id="maintenanceCardsEmpty"><span>▣</span><h3>Bakım kartı bulunamadı</h3><p>Filtreleri değiştirin veya yeni bir bakım kartı oluşturun.</p></div></div>
+      </section>
+
+      <section class="view" id="stockView">
+        <div class="view-intro"><div><h2>Malzeme &amp; Stok</h2><p>Bakım yedek parçalarını, kritik stok seviyelerini ve sarf hareketlerini yönetin.</p></div><button class="primary-btn" id="addMaterialBtn">＋ Malzeme Ekle</button></div>
+        <div class="stats-grid compact-stats" id="stockStats"></div>
+        <div class="panel"><div class="table-toolbar"><label class="search-box"><span>⌕</span><input id="stockSearch" type="search" placeholder="Malzeme adı, kodu, ekipman veya iş emri ara"></label><select id="stockFilter"><option value="">Tüm stoklar</option><option value="critical">Kritik stok</option><option value="normal">Yeterli stok</option></select></div><div class="table-wrap"><table><thead><tr><th>Malzeme</th><th>Stok Kodu</th><th>İlgili Ekipman</th><th>Depo</th><th>Mevcut</th><th>Minimum</th><th>İş Emri Kullanımı</th><th>Birim Fiyat</th><th>Stok Durumu</th><th>İşlemler</th></tr></thead><tbody id="stockTable"></tbody></table></div></div>
+      </section>
+
+      <section class="view" id="budgetView">
+        <div class="view-intro"><div><h2>Bakım Bütçesi &amp; Satın Alma</h2><p>Onaylanan bütçeyi, siparişe bağlanan tutarı ve gerçekleşen bakım satın almalarını birlikte izleyin.</p></div><div class="intro-actions"><input class="hidden" id="costExcelFile" type="file" accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"><button class="secondary-btn" id="importCostExcelBtn">⇧ Excel Gider Yükle</button><button class="secondary-btn" id="exportBudgetBtn">⇩ Dışa Aktar</button><button class="secondary-btn" id="addPurchaseBtn">＋ Satın Alma Kaydı</button><button class="primary-btn" id="addBudgetPlanBtn">＋ Bütçe Tanımla</button></div></div>
+        <div class="budget-toolbar panel"><label>Yıl<select id="budgetYearFilter"></select></label><label>Bütçe grubu<select id="budgetCategoryFilter"><option value="">Tüm bütçe grupları</option><option>Satın Alma (Malzeme + Dış Hizmet)</option><option>İşçilik</option></select></label><label>Faaliyet birimi<input id="budgetUnitFilter" type="search" placeholder="Birim veya masraf yeri ara"></label><div><small>HESAPLAMA</small><strong>Bütçe − Gerçekleşen = Kalan</strong></div></div>
+        <div class="budget-kpis" id="budgetKpis"></div>
+        <div class="budget-grid">
+          <section class="panel budget-performance-panel"><div class="panel-head"><div><h2>Kategori Bazında Bütçe Gerçekleşen</h2><p>Malzeme, dış hizmet ve diğer bakım satın almaları</p></div></div><div id="budgetPerformance"></div></section>
+          <section class="panel"><div class="panel-head"><div><h2>Bütçe Planları</h2><p>Her yıl ve ay için bütçe, gerçekleşen ve kalan tutar</p></div><span class="source-pill" id="budgetPlanCount">0 kayıt</span></div><div class="table-wrap"><table><thead><tr><th>Dönem</th><th>Kategori</th><th>Faaliyet Birimi</th><th>Masraf Yeri</th><th>Bütçe</th><th>Gerçekleşen</th><th>Kalan / Sapma</th><th>Kullanım</th><th></th></tr></thead><tbody id="budgetPlanTable"></tbody></table></div></section>
+        </div>
+        <section class="panel cost-import-history-panel"><div class="panel-head"><div><h2>Maliyet Birimi Excel Aktarımları</h2><p>Yüklenen dosyaları, net tutarları ve mükerrer kontrol sonucunu izleyin</p></div><span class="source-pill" id="costImportCount">0 aktarım</span></div><div id="costImportHistory" class="cost-import-history"></div></section>
+        <section class="panel budget-purchase-panel"><div class="panel-head"><div><h2>Satın Alma ve Gerçekleşen Kayıtları</h2><p>Manuel satın almalar ile yönetici tarafından kapatılan iş emirlerinden gelen maliyetler</p></div><span class="source-pill" id="purchaseRecordCount">0 kayıt</span></div><div class="table-wrap"><table><thead><tr><th>Tarih</th><th>Kaynak / İş Emri</th><th>Tedarikçi</th><th>SAS / Fatura</th><th>Kategori</th><th>Faaliyet / Masraf Yeri</th><th>Durum</th><th>Tutar</th><th></th></tr></thead><tbody id="purchaseRecordTable"></tbody></table></div></section>
+      </section>
+
+      <section class="view" id="managerView">
+        <div class="manager-login-shell" id="managerLoginShell">
+          <form class="manager-login-card" id="managerLoginForm">
+            <div class="manager-login-brand"><span>◆</span><div><small>SON TEYİT MERKEZİ</small><h2>Yönetici Girişi</h2><p>Operatör teyitlerini, işçilik ve malzeme maliyetlerini yalnızca yetkili yöneticiler onaylayabilir.</p></div></div>
+            <label>Yönetici<select id="managerUserSelect" name="approverId" required></select></label>
+            <label>Şifre<div class="manager-password-field"><input id="managerPassword" name="password" type="password" autocomplete="current-password" minlength="4" required placeholder="Şifrenizi girin"><button type="button" id="toggleManagerPassword" aria-label="Şifreyi göster">Göster</button></div></label>
+            <p class="manager-login-error hidden" id="managerLoginError" role="alert"></p>
+            <button type="submit" class="primary-btn manager-login-submit">Onay Merkezine Gir</button>
+            <small class="manager-login-help">Giriş için Supabase üzerinde tanımlı kişisel hesabınızı kullanın.</small>
+          </form>
+        </div>
+        <div class="manager-workspace hidden" id="managerWorkspace">
+          <div class="manager-approval-hero"><div><span>YÖNETİCİ ONAY MERKEZİ</span><h2>Maliyet ve Son Teyitler</h2><p>Operatörlerden gelen işleri fiyatlandırın, onaylayıp kapatın veya düzeltme için geri gönderin.</p></div><div class="manager-session"><span class="avatar" id="managerSessionAvatar">—</span><div><small>YETKİLİ YÖNETİCİ</small><strong id="managerSessionName">Yönetici</strong></div><button type="button" id="managerPasswordBtn">Şifre Değiştir</button><button type="button" id="managerLogoutBtn">Çıkış</button></div></div>
+          <div class="manager-approval-stats" id="managerApprovalStats"></div>
+          <section class="panel manager-queue-panel"><div class="panel-head"><div><h2>Onay Bekleyen Son Teyitler</h2><p>Operatör tarafından tamamlanarak maliyet onayına gönderilen işler</p></div><span class="source-pill" id="managerPendingLabel">0 kayıt</span></div><div class="manager-approval-list" id="managerApprovalList"></div><div class="empty-state hidden" id="managerApprovalEmpty"><span>✓</span><h3>Onay bekleyen iş yok</h3><p>Operatör teyitleri geldiğinde bu bölümde görüntülenecek.</p></div></section>
+          <section class="panel manager-history-panel"><div class="panel-head"><div><h2>Son Kapatılan İşler</h2><p>Maliyetleri onaylanan ve yönetici teyidiyle kapatılan kayıtlar</p></div></div><div class="table-wrap"><table><thead><tr><th>İş Emri</th><th>İş Tanımı</th><th>Makine</th><th>Onaylayan</th><th>Onay Tarihi</th><th>Toplam Maliyet</th><th></th></tr></thead><tbody id="managerApprovalHistory"></tbody></table></div></section>
+        </div>
+      </section>
+
+      <section class="view" id="techniciansView">
+        <div class="view-intro"><div><h2>Personel Yönetimi</h2><p>Bakım ekibinin uzmanlık, iş yükü ve performans durumunu görüntüleyin.</p></div><button class="primary-btn" id="addTechBtn">＋ Personel Ekle</button></div>
+        <div class="team-capacity panel" id="teamCapacity"></div>
+        <div class="card-grid" id="technicianGrid"></div>
+      </section>
+
+      <section class="view" id="accessView">
+        <div class="view-intro"><div><h2>Giriş Yetkileri</h2><p>Kimlerin operatör veya yönetici olarak giriş yapabileceğini yönetin.</p></div><button type="button" class="primary-btn" id="addAccessAccountBtn">＋ Kullanıcı Ekle</button></div>
+        <div class="panel"><div class="table-toolbar"><label class="search-box"><span>⌕</span><input id="accessAccountSearch" type="search" placeholder="Kullanıcı veya görev ara"></label><span class="source-pill" id="accessAccountCount">0 kişi</span></div><div class="table-wrap"><table><thead><tr><th>Kullanıcı</th><th>Operatör Girişi</th><th>Yönetici Girişi</th><th>Durum</th><th>İşlem</th></tr></thead><tbody id="accessAccountsTable"></tbody></table></div></div>
+        <section class="panel fault-catalog-panel" id="faultCatalogPanel"><div class="panel-head"><div><h2>Arıza Tanım ve Nedenleri</h2><p>Dört arıza listesindeki seçenekleri yalnızca Admin Yönetici ekleyebilir veya kaldırabilir.</p></div></div><form id="faultCatalogForm" class="fault-catalog-form"><label>Liste<select name="stage" required><option value="electricalFault">Elektrik Arıza Tanımı</option><option value="electricalCause">Elektrik Arıza Nedeni</option><option value="mechanicalFault">Mekanik Arıza Tanımı</option><option value="mechanicalCause">Mekanik Arıza Nedeni</option></select></label><label>Yeni seçenek<input name="label" required maxlength="100" placeholder="Eklenecek tanım veya nedeni yazın"></label><button type="submit" class="primary-btn">＋ Listeye Ekle</button></form><div class="fault-catalog-added" id="faultCatalogAdded" aria-live="polite"></div></section>
+      </section>
+
+      <section class="view" id="analyticsView">
+        <div class="view-intro"><div><h2>Esnek Analiz Panosu</h2><p>Tabloları sürükleyin, boyutlandırın ve yalnızca görmek istediğiniz verileri bırakın.</p></div><div class="intro-actions"><button class="secondary-btn" id="analyticsResetLayout">↺ Varsayılan Düzen</button><button class="primary-btn" id="widgetManagerBtn">＋ Tablo Ekle / Kaldır</button></div></div>
+
+        <div class="analytics-toolbar panel">
+          <div class="analytics-date-field"><label for="analyticsDateFrom">Başlangıç</label><input type="date" id="analyticsDateFrom"></div>
+          <div class="analytics-date-field"><label for="analyticsDateTo">Bitiş</label><input type="date" id="analyticsDateTo"></div>
+          <label class="analytics-search"><span>⌕</span><input id="analyticsSearch" type="search" placeholder="İş tanımı, bildirim no veya ekipman ara"></label>
+          <button class="secondary-btn" id="analyticsClearFilters">Süzgeçleri Temizle</button>
+          <div class="analytics-result"><strong id="analyticsResultCount">0</strong><span>çalışma kaydı</span></div>
+        </div>
+        <div class="person-filter-row" id="analyticsPersonFilters"></div>
+        <div class="analysis-filter-summary hidden" id="analysisFilterSummary"><span>Aktif kırılım:</span><div id="analysisFilterTags"></div></div>
+
+        <div class="widget-manager panel hidden" id="widgetManager">
+          <div><strong>Panoda gösterilecek tablolar</strong><span>Seçiminiz ve yerleşim düzeniniz bu tarayıcıda saklanır.</span></div>
+          <div class="widget-options" id="widgetOptions"></div>
+        </div>
+
+        <div class="custom-dashboard-grid" id="analyticsGrid">
+          <article class="panel custom-widget span-12" data-widget="work-detail" draggable="true">
+            <div class="widget-head"><div class="drag-handle" title="Sürükleyerek taşı">⠿</div><div><h2>Personel Çalışma Detayı</h2><p>Başlama, bitirme, mola ve net çalışma süresi</p></div><span class="widget-count" id="workDetailCount"></span><div class="widget-actions"><button data-column-manager="work-detail">Kolonlar</button><button data-widget-size="work-detail">↔</button><button data-widget-hide="work-detail">×</button></div></div>
+            <div class="column-manager hidden" id="workDetailColumns"></div>
+            <div class="widget-table-wrap"><table class="analytics-table"><thead><tr id="workDetailHead"></tr></thead><tbody id="workDetailBody"></tbody></table></div>
+            <div class="widget-footer" id="workDetailFooter"></div>
+          </article>
+
+          <article class="panel custom-widget span-4" data-widget="job-list" draggable="true">
+            <div class="widget-head"><div class="drag-handle">⠿</div><div><h2>İş Tanımları</h2><p>Seçili dönemde yapılan işler</p></div><div class="widget-actions"><button data-widget-size="job-list">↔</button><button data-widget-hide="job-list">×</button></div></div>
+            <div class="analytics-list" id="analyticsJobList"></div>
+          </article>
+
+          <article class="panel custom-widget span-4" data-widget="equipment-summary" draggable="true">
+            <div class="widget-head"><div class="drag-handle">⠿</div><div><h2>Ekipman Dağılımı</h2><p>Bakım kategorisine göre iş sayısı</p></div><div class="widget-actions"><button data-widget-size="equipment-summary">↔</button><button data-widget-hide="equipment-summary">×</button></div></div>
+            <div class="widget-table-wrap compact-table"><table class="analytics-table"><thead><tr><th>Ekipman Tanımı</th><th>İş Sayısı</th></tr></thead><tbody id="equipmentSummaryBody"></tbody></table></div>
+          </article>
+
+          <article class="panel custom-widget span-4" data-widget="maintenance-pie" draggable="true">
+            <div class="widget-head"><div class="drag-handle">⠿</div><div><h2>Bakım Türü</h2><p>İş emirlerinin bakım tipine göre dağılımı</p></div><div class="widget-actions"><button data-widget-size="maintenance-pie">↔</button><button data-widget-hide="maintenance-pie">×</button></div></div>
+            <div class="analysis-donut-layout"><div class="analysis-donut" id="maintenanceTypeDonut"><div><strong id="maintenanceTypeTotal">0</strong><span>iş</span></div></div><div class="analysis-legend" id="maintenanceTypeLegend"></div></div>
+          </article>
+
+          <article class="panel custom-widget span-4" data-widget="branch-pie" draggable="true">
+            <div class="widget-head"><div class="drag-handle">⠿</div><div><h2>Bakım Branşı</h2><p>Elektrik ve mekanik çalışma dağılımı</p></div><div class="widget-actions"><button data-widget-size="branch-pie">↔</button><button data-widget-hide="branch-pie">×</button></div></div>
+            <div class="analysis-donut-layout"><div class="analysis-donut" id="branchDonut"><div><strong id="branchTotal">0</strong><span>iş</span></div></div><div class="analysis-legend" id="branchLegend"></div></div>
+          </article>
+
+          <article class="panel custom-widget span-8" data-widget="person-cost" draggable="true">
+            <div class="widget-head"><div class="drag-handle">⠿</div><div><h2>Personel × Masraf Yeri</h2><p>Toplam çalışma saatleri</p></div><div class="widget-actions"><button data-widget-size="person-cost">↔</button><button data-widget-hide="person-cost">×</button></div></div>
+            <div class="widget-table-wrap"><table class="analytics-table"><thead><tr><th>Kişi</th><th>Masraf Yeri</th><th>Süre (SA)</th></tr></thead><tbody id="personCostBody"></tbody><tfoot id="personCostFoot"></tfoot></table></div>
+          </article>
+
+          <article class="panel custom-widget span-8" data-widget="person-job" draggable="true">
+            <div class="widget-head"><div class="drag-handle">⠿</div><div><h2>Personel × İş Tanımı</h2><p>İş bazında harcanan net süre</p></div><div class="widget-actions"><button data-widget-size="person-job">↔</button><button data-widget-hide="person-job">×</button></div></div>
+            <div class="widget-table-wrap"><table class="analytics-table"><thead><tr><th>Kişi</th><th>İş Tanımı</th><th>Süre (SA)</th></tr></thead><tbody id="personJobBody"></tbody><tfoot id="personJobFoot"></tfoot></table></div>
+          </article>
+
+          <article class="panel custom-widget span-4" data-widget="cost-summary" draggable="true">
+            <div class="widget-head"><div class="drag-handle">⠿</div><div><h2>Masraf Yeri Dağılımı</h2><p>Süre ve yüzdelik pay</p></div><div class="widget-actions"><button data-widget-size="cost-summary">↔</button><button data-widget-hide="cost-summary">×</button></div></div>
+            <div class="widget-table-wrap"><table class="analytics-table"><thead><tr><th>Masraf Yeri</th><th>Süre</th><th>%</th></tr></thead><tbody id="costSummaryBody"></tbody><tfoot id="costSummaryFoot"></tfoot></table></div>
+          </article>
+
+          <article class="panel custom-widget span-12" data-widget="cost-matrix" draggable="true">
+            <div class="widget-head"><div class="drag-handle">⠿</div><div><h2>Masraf Yeri × Personel Matrisi</h2><p>Her personelin çalışma süresinin masraf yerlerine yüzdelik dağılımı</p></div><div class="widget-actions"><button data-widget-size="cost-matrix">↔</button><button data-widget-hide="cost-matrix">×</button></div></div>
+            <div class="widget-table-wrap"><table class="analytics-table matrix-table"><thead id="costMatrixHead"></thead><tbody id="costMatrixBody"></tbody><tfoot id="costMatrixFoot"></tfoot></table></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="view" id="reportsView">
+        <div class="view-intro"><div><h2>Raporlar &amp; Analiz</h2><p>Bakım performansı, arıza dağılımı ve ekip verimliliği göstergeleri.</p></div><button class="secondary-btn" id="reportExportBtn">⇩ Raporu Dışa Aktar</button></div>
+        <div class="stats-grid" id="reportStats"></div>
+        <div class="dashboard-grid report-grid">
+          <section class="panel"><div class="panel-head"><div><h2>Aylık Bakım Trendi</h2><p>Son 12 ay iş emri ve tamamlanma sayıları</p></div></div><div class="bar-chart" id="reportMonthlyChart"></div></section>
+          <section class="panel"><div class="panel-head"><div><h2>Bakım Türü Dağılımı</h2><p>Arızi, planlı ve diğer işler</p></div></div><div class="type-analysis" id="typeAnalysis"></div></section>
+        </div>
+        <div class="dashboard-grid report-grid lower-report-grid">
+          <section class="panel"><div class="panel-head"><div><h2>En Çok Bakım Gören Varlıklar</h2><p>Toplam iş emri sayısına göre</p></div></div><div class="ranking-list" id="assetRanking"></div></section>
+          <section class="panel"><div class="panel-head"><div><h2>Personel Performansı</h2><p>Tamamlanan işler ve ortalama müdahale süresi</p></div></div><div class="table-wrap"><table><thead><tr><th>Personel</th><th>Tamamlanan</th><th>Aktif</th><th>Ort. Süre</th></tr></thead><tbody id="performanceTable"></tbody></table></div></section>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal-backdrop hidden" id="maintenanceCardModal" role="dialog" aria-modal="true" aria-labelledby="maintenanceCardModalTitle">
+    <form class="modal maintenance-card-modal" id="maintenanceCardForm">
+      <div class="modal-head"><div><span class="modal-eyebrow">PERİYODİK BAKIM PLANI</span><h2 id="maintenanceCardModalTitle">Yeni Bakım Kartı</h2><p>Makineyi, kontrol adımlarını ve bakım periyodunu tanımlayın.</p></div><button type="button" class="icon-btn maintenance-card-close">×</button></div>
+      <input type="hidden" name="cardId">
+      <div class="form-section"><h3>Kart ve makine bilgileri</h3><div class="form-grid"><label class="full">Bakım kartı adı<input required name="title" placeholder="Örn. Aylık CNC mekanik kontrolü"></label><label>Makine / ekipman<select required name="assetId" id="maintenanceCardAssetSelect"></select></label><label>Sorumlu personel<select required name="technicianId" id="maintenanceCardTechSelect"></select></label><label>Bakım branşı<select name="branch"><option>Mekanik Bakım</option><option>Elektrik Bakım</option><option>Otomasyon</option><option>Genel Bakım</option></select></label><label>Öncelik<select name="priority"><option>Orta</option><option>Düşük</option><option>Yüksek</option><option>Acil</option></select></label><label>Periyot<select name="period"><option>Günlük</option><option>Haftalık</option><option selected>Aylık</option><option>3 Aylık</option><option>6 Aylık</option><option>Yıllık</option><option>Özel</option></select></label><label>Özel periyot (gün)<input type="number" min="1" name="intervalDays" value="30"></label><label>İlk / sonraki bakım tarihi<input required type="date" name="nextDueDate"></label><label>Planlanan süre (saat)<input type="number" min="0.25" step="0.25" name="plannedHours" value="1"></label><label>Durum<select name="active"><option value="true">Aktif</option><option value="false">Pasif</option></select></label></div></div>
+      <div class="form-section"><div class="section-heading"><h3>Kontrol listesi</h3><button type="button" class="secondary-btn" id="addChecklistItemBtn">＋ Kontrol Maddesi</button></div><div class="maintenance-builder-list" id="maintenanceChecklistBuilder"></div></div>
+      <div class="form-section"><div class="section-heading"><h3>Ölçüm alanları</h3><button type="button" class="secondary-btn" id="addMeasurementBtn">＋ Ölçüm Alanı</button></div><p class="section-help">Sıcaklık, basınç, titreşim veya sayaç gibi sayısal kontrolleri tanımlayın.</p><div class="measurement-builder-list" id="maintenanceMeasurementBuilder"></div></div>
+      <div class="form-section"><div class="form-grid"><label class="full">Bakım talimatı / iş güvenliği notu<textarea name="instructions" rows="3"></textarea></label></div></div>
+      <div class="modal-actions"><button type="button" class="secondary-btn maintenance-card-close">Vazgeç</button><button type="submit" class="primary-btn">Bakım Kartını Kaydet</button></div>
+    </form>
+  </div>
+
+  <div class="modal-backdrop hidden" id="capacityModal" role="dialog" aria-modal="true" aria-labelledby="capacityModalTitle">
+    <form class="modal capacity-modal" id="capacityForm">
+      <div class="modal-head"><div><span class="modal-eyebrow">PERSONEL KAPASİTE AYARI</span><h2 id="capacityModalTitle">Aylık Personel Saatleri</h2><p>Fabrika için sabit vardiya varsayımı yapılmaz. Burada yalnızca personelin aylık planlanan saatlerini belirleyin.</p></div><button type="button" class="icon-btn capacity-close">×</button></div>
+      <div class="form-section"><div class="form-grid"><label>Ay<input required type="month" name="month"></label><label>Personel standart aylık saati<input required type="number" min="0" step="0.5" name="standardHours" value="180"><span class="subtext">Kişi bazlı saatleri topluca doldurmak için kullanılır</span></label></div></div>
+      <div class="form-section"><div class="section-heading"><h3>Kişi bazlı planlanan çalışma saati</h3><div class="capacity-modal-actions"><button type="button" class="secondary-btn" id="capacityAddTech">＋ Personel Ekle</button><button type="button" class="secondary-btn" id="applyStandardHours">Standart Saati Tümüne Uygula</button></div></div><div class="capacity-edit-list" id="capacityEditList"></div></div>
+      <div class="modal-actions"><button type="button" class="secondary-btn capacity-close">Vazgeç</button><button type="submit" class="primary-btn">Aylık Saatleri Kaydet</button></div>
+    </form>
+  </div>
+
+  <div class="modal-backdrop hidden" id="factoryCalendarModal" role="dialog" aria-modal="true" aria-labelledby="factoryCalendarTitle">
+    <form class="modal factory-calendar-modal" id="factoryCalendarForm">
+      <div class="modal-head"><div><span class="modal-eyebrow">GERÇEK ÇALIŞMA TAKVİMİ</span><h2 id="factoryCalendarTitle">Aylık Fabrika Çalışma Saatleri</h2><p>Normal saatleri aya uygulayın; tatil veya farklı çalışılan günleri listeden değiştirin.</p></div><button type="button" class="icon-btn factory-calendar-close" aria-label="Kapat">×</button></div>
+      <div class="form-section factory-calendar-template">
+        <div class="form-grid"><label>Ay<input required type="month" name="month"></label><label>Çalışma başlangıcı<input required type="time" name="start" value="08:00"></label><label>Çalışma bitşi<input required type="time" name="end" value="18:00"></label><label>Öğle arası<input type="time" name="breakStart" value="12:00"><span class="subtext">Başlangıç</span></label><label>Öğle arası bitişi<input type="time" name="breakEnd" value="13:00"></label></div>
+        <fieldset class="factory-weekdays"><legend>Normal çalışma günleri</legend><label><input type="checkbox" data-calendar-weekday="1" checked>Pzt</label><label><input type="checkbox" data-calendar-weekday="2" checked>Sal</label><label><input type="checkbox" data-calendar-weekday="3" checked>Çar</label><label><input type="checkbox" data-calendar-weekday="4" checked>Per</label><label><input type="checkbox" data-calendar-weekday="5" checked>Cum</label><label><input type="checkbox" data-calendar-weekday="6">Cmt</label><label><input type="checkbox" data-calendar-weekday="0">Paz</label><button type="button" class="secondary-btn" id="applyFactoryCalendarTemplate">Seçimi Aya Uygula</button></fieldset>
+      </div>
+      <div class="form-section"><div class="factory-calendar-summary" id="factoryCalendarSummary"></div><div class="factory-calendar-list" id="factoryCalendarRows"></div></div>
+      <div class="modal-actions"><button type="button" class="secondary-btn factory-calendar-close">Vazgeç</button><button type="submit" class="primary-btn">Fabrika Takvimini Kaydet</button></div>
+    </form>
+  </div>
+
+  <div class="modal-backdrop hidden" id="orderModal" role="dialog" aria-modal="true" aria-labelledby="orderModalTitle">
+    <form class="modal" id="orderForm">
+      <div class="modal-head"><div><span class="modal-eyebrow">İŞ YÖNETİMİ</span><h2 id="orderModalTitle">Yeni İş Emri</h2><p>Bakım işinin kapsamını, varlığını ve sorumlusunu belirleyin.</p></div><button type="button" class="icon-btn close-order-modal" aria-label="Kapat">×</button></div>
+      <div class="form-section"><h3>İş bilgileri</h3><div class="form-grid"><label class="full">İş emri başlığı<input required name="title" placeholder="Örn. Konveyör bant rulman kontrolü"></label><label>Makine / ekipman<select required name="assetId" id="orderAssetSelect"></select></label><label class="hidden" id="orderOtherAssetField">Diğer ekipman nedir?<input name="otherAssetName" placeholder="Ekipman veya alan adını yazın"></label><label>Konum / masraf yeri<input required name="location" placeholder="Üretim Hattı 2"></label><label>Bakım türü<select name="type"><option>Arıza Bakım</option><option>Planlı Bakım</option><option>Koruyucu Bakım</option><option>Kontrol</option><option>İyileştirme</option></select></label><label>Bakım branşı<select name="maintenanceBranch"><option>Mekanik Bakım</option><option>Elektrik Bakım</option><option>Otomasyon</option><option>Genel Bakım</option></select></label><label>Önem derecesi<select name="priority"><option>Orta</option><option>Düşük</option><option>Yüksek</option><option>Acil</option></select></label><label>Planlanan tarih<input required name="dueDate" type="date"></label><label>Arıza başlangıç tarih / saati<input name="faultStart" type="datetime-local"></label><label>SAP bildirim durumu<select name="notificationStatus"><option>Yok</option><option>Numara Bekliyor</option><option>SAP Bildirimi Açıldı</option><option>SAP ile Eşleşti</option></select></label><label>SAP bildirim numarası<input name="notificationNo" placeholder="Örn. 10016125"></label><label>Satın alma sipariş no<input name="purchaseOrderNo" placeholder="Örn. 4500012345"></label><label>PT numarası<input name="ptNo" placeholder="Örn. PT211"></label></div></div>
+      <div class="form-section"><h3>Atama, maliyet ve açıklama</h3><div class="form-grid"><label class="full">Atama şekli<select name="assignmentMode" id="orderAssignmentMode"><option value="selected">Seçili personele ata</option><option value="all">Herkese açık · İlk iki kişi başlatabilir</option></select></label><label>Birinci personel<select required name="technicianId" id="orderTechSelect"></select></label><label>İkinci personel (isteğe bağlı)<select name="secondTechnicianId" id="orderSecondTechSelect"></select></label><label>Planlanan süre (saat)<input name="plannedHours" type="number" min="0.5" step="0.5" value="1"></label><label>Tahmini maliyet (₺)<input name="estimatedCost" type="number" min="0" step="0.01" value="0"></label><label>Masraf yeri kodu<input name="costCenter" placeholder="2230 Bakım Onarım"></label><label class="full">İş açıklaması<textarea required name="description" rows="4" placeholder="Arıza belirtisi, yapılacak işlem ve iş güvenliği notları..."></textarea></label></div></div>
+      <div class="modal-actions"><button type="button" class="secondary-btn close-order-modal">Vazgeç</button><button type="submit" class="primary-btn">İş Emrini Oluştur</button></div>
+    </form>
+  </div>
+
+  <div class="modal-backdrop hidden" id="requestModal" role="dialog" aria-modal="true">
+    <form class="modal small-modal" id="requestForm">
+      <div class="modal-head"><div><span class="modal-eyebrow">SAHA BİLDİRİMİ</span><h2 id="requestModalTitle">Yeni İş Talebi</h2><p id="requestModalDescription">Bakım ekibinin değerlendirmesi için arıza veya ihtiyaç bildirin.</p></div><button type="button" class="icon-btn close-request-modal">×</button></div>
+      <input type="hidden" name="requestId">
+      <div class="form-section"><div class="form-grid"><label class="full">Talep başlığı<input required name="title" placeholder="Arıza veya ihtiyacı kısa şekilde yazın"></label><label>Ekipman<select required name="assetId" id="requestAssetSelect"></select></label><label class="hidden" id="requestOtherAssetField">Diğer ekipman nedir?<input name="otherAssetName" placeholder="Ekipman veya alan adını yazın"></label><label>Faaliyet / arıza türü<input required name="activityType" id="requestActivityType" placeholder="Örn. CNC Arızası"><span class="subtext" id="requestActivityTypeHint">Ekipman sınıfından otomatik gelir; ayrı kaydedilir</span></label><label>Konum<input required name="location"></label><label>Aciliyet<select required name="urgency" id="requestUrgency"><option value="Çok Acil">Çok Acil (5)</option><option value="Acil">Acil (4)</option><option value="Normal" selected>Normal (3)</option><option value="Ertelenebilir">Ertelenebilir (2)</option><option value="Düşük">Düşük (1)</option></select></label><label>Hesaplanan öncelik<input id="requestCalculatedPriority" readonly value="Hesaplanamadı"><span class="subtext" id="requestPriorityHint">Ekipman ve aciliyet seçimine göre hesaplanır.</span></label><label>Bildirim Numarası<input name="notificationNo" placeholder="İsteğe bağlı"></label><label class="full">Açıklama<textarea required name="description" rows="4"></textarea></label></div></div>
+      <div class="modal-actions"><button type="button" class="secondary-btn close-request-modal">Vazgeç</button><button type="submit" class="primary-btn" id="requestSubmitBtn">Talebi Gönder</button></div>
+    </form>
+  </div>
+
+  <div class="modal-backdrop hidden" id="detailModal" role="dialog" aria-modal="true"><div class="modal detail-modal" id="detailContent"></div></div>
+
+  <div class="modal-backdrop hidden" id="correctionRequestModal" role="dialog" aria-modal="true" aria-labelledby="correctionRequestTitle">
+    <form class="modal small-modal" id="correctionRequestForm">
+      <div class="modal-head"><div><span class="modal-eyebrow">YÖNETİCİ GERİ BİLDİRİMİ</span><h2 id="correctionRequestTitle">Düzeltme İste</h2><p id="correctionRequestOrder">Operatöre neyin düzeltilmesi gerektiğini açıklayın.</p></div><button type="button" class="icon-btn correction-request-close" aria-label="Kapat">×</button></div>
+      <input type="hidden" name="orderId">
+      <div class="form-section"><div class="form-grid"><label class="full">Düzeltilecek konu<textarea name="correctionNote" rows="5" maxlength="2000" required placeholder="Örn. Kullanılan malzemenin miktarını ve yapılan işlemi ayrıntılandırın."></textarea></label></div><p class="subtext">Bu açıklama operatörün iş kartında ve iş emri geçmişinde görünecek.</p></div>
+      <div class="modal-actions"><button type="button" class="secondary-btn correction-request-close">Vazgeç</button><button type="submit" class="primary-btn">Düzeltme İste</button></div>
+    </form>
+  </div>
+
+  <div class="modal-backdrop hidden" id="accessAccountModal" role="dialog" aria-modal="true" aria-labelledby="accessAccountModalTitle">
+    <form class="modal small-modal" id="accessAccountForm">
+      <div class="modal-head"><div><span class="modal-eyebrow">GİRİŞ YETKİLERİ</span><h2 id="accessAccountModalTitle">Kullanıcı Ekle</h2><p>Supabase hesabını, giriş türlerini ve yetkilerini belirleyin.</p></div><button type="button" class="icon-btn access-account-close" aria-label="Kapat">×</button></div>
+      <input type="hidden" name="accountId">
+      <div class="form-section"><div class="form-grid"><label class="full">Ad soyad<input required name="name" autocomplete="name"></label><label class="full">Bakım görevi / uzmanlık<input name="technicianRole" placeholder="Örn. Mekanik Bakım"></label><label>Telefon / dahili<input name="phone" placeholder="İsteğe bağlı"></label><label>E-posta adresi<input name="email" type="email" autocomplete="email" required placeholder="ad.soyad@firma.com"></label><label>Saatlik işçilik ücreti (₺)<input name="hourlyRate" type="number" min="0" step="0.01" value="0"></label></div><div class="access-role-fields"><label><input type="checkbox" name="operatorAccess"><span><strong>Operatör girişi</strong><small>Kendisine atanan iş emirlerini görür.</small></span></label><label><input type="checkbox" name="managerAccess"><span><strong>Yönetici girişi</strong><small>Yönetim ekranlarına ve onaylara erişir.</small></span></label></div><div id="adminPermissionFields" class="admin-permission-fields"><strong>Admin Yönetici ve silme yetkileri</strong><p class="subtext">Bu alanı yalnızca Admin Yönetici düzenleyebilir.</p><label><input type="checkbox" name="adminAccess"> Admin Yönetici (tüm işlemlere müdahale ve tüm silme yetkileri)</label><div class="admin-permission-grid"><label><input type="checkbox" name="deleteOrders"> İş emirleri</label><label><input type="checkbox" name="deleteRequests"> İş talepleri</label><label><input type="checkbox" name="deleteAssets"> Makine kartları</label><label><input type="checkbox" name="deleteMaintenance"> Bakım kartları</label><label><input type="checkbox" name="deleteStock"> Stok kartları</label><label><input type="checkbox" name="deletePersonnel"> Personel</label><label><input type="checkbox" name="deleteFollowUps"> Takipler</label><label><input type="checkbox" name="deleteBudget"> Bütçe / satın alma</label><label><input type="checkbox" name="deleteScada"> SCADA düzeni</label></div></div><div class="form-grid"><label class="full">Şifre <span id="accessPasswordHint">Yeni kullanıcı için zorunlu</span><input name="password" type="password" minlength="8" autocomplete="new-password"></label><label class="full">Şifre tekrarı<input name="passwordConfirm" type="password" minlength="8" autocomplete="new-password"></label></div><p class="access-account-note">Kullanıcı bu e-posta adresi ve Supabase şifresiyle giriş yapar. Düzenlerken şifre boş bırakılırsa mevcut şifre korunur.</p><p class="access-error hidden" id="accessAccountError" role="alert"></p></div>
+      <div class="form-section access-page-section hidden" id="pagePermissionFields"><h3>Görülebilecek Sayfalar</h3><p>Yönetici girişinde bu kişinin açabileceği sayfaları seçin. Operatör girişi kendi iş ekranıyla sınırlıdır; Admin Yönetici tüm sayfaları görür.</p><div class="access-page-grid"><label><input type="checkbox" name="page_dashboard"> Dashboard</label><label><input type="checkbox" name="page_scada"> Arızalı Duruş SCADA</label><label><input type="checkbox" name="page_requests"> İş Talepleri</label><label><input type="checkbox" name="page_orders"> İş Emirleri</label><label><input type="checkbox" name="page_planned"> Planlı Bakım</label><label><input type="checkbox" name="page_assets"> Makine Bakım Kartları</label><label><input type="checkbox" name="page_maintenanceCards"> Bakım Kartları</label><label><input type="checkbox" name="page_stock"> Malzeme &amp; Stok</label><label><input type="checkbox" name="page_budget"> Bütçe &amp; Satın Alma</label><label><input type="checkbox" name="page_operator"> Operatör Sayfası</label><label><input type="checkbox" name="page_manager"> Yönetici Onayları</label><label><input type="checkbox" name="page_technicians"> Personel</label><label><input type="checkbox" name="page_analytics"> Esnek Analiz</label><label><input type="checkbox" name="page_reports"> Raporlar &amp; Analiz</label></div></div>
+      <div class="modal-actions"><button type="button" class="danger-btn hidden" id="deleteAccessAccountBtn">Kullanıcıyı Sil</button><button type="button" class="secondary-btn access-account-close">Vazgeç</button><button type="submit" class="primary-btn">Kaydet</button></div>
+    </form>
+  </div>
+
+  <div class="modal-backdrop hidden" id="removeAccessAccountModal" role="alertdialog" aria-modal="true" aria-labelledby="removeAccessAccountTitle" aria-describedby="removeAccessAccountMessage">
+    <div class="modal small-modal"><div class="modal-head"><div><span class="modal-eyebrow">GİRİŞ YETKİLERİ</span><h2 id="removeAccessAccountTitle">Kullanıcıyı Sil?</h2><p>Giriş yetkileri kapatılır; geçmiş iş kayıtları korunur.</p></div></div><div class="form-section"><p class="stock-warning-text" id="removeAccessAccountMessage"></p></div><div class="modal-actions"><button type="button" class="secondary-btn" id="removeAccessAccountCancelBtn">Vazgeç</button><button type="button" class="danger-btn" id="removeAccessAccountConfirmBtn">Kullanıcıyı Sil</button></div></div>
+  </div>
+
+  <div class="modal-backdrop hidden" id="followUpModal" role="dialog" aria-modal="true" aria-labelledby="followUpModalTitle">
+    <form class="modal small-modal" id="followUpForm">
+      <div class="modal-head"><div><span class="modal-eyebrow">YÖNETİCİ TAKİBİ</span><h2 id="followUpModalTitle">Takip Konusu Ekle</h2><p>Yapılması veya sonuçlandırılması gereken konuyu sorumlu yöneticiye atayın.</p></div><button type="button" class="icon-btn follow-up-close" aria-label="Pencereyi kapat">×</button></div>
+      <input type="hidden" name="id">
+      <div class="form-section"><div class="form-grid">
+        <label class="full">Konu<input name="title" required placeholder="Örn. Pompa servisi aranacak"></label>
+        <label>Takip türü<select name="type" required><option>Aranacak</option><option>Görüşülecek</option><option>Termin Alınacak</option><option>Teklif Bekleniyor</option><option>Sipariş Takibi</option><option>Onay Bekleniyor</option><option>Diğer</option></select></label>
+        <label>Sorumlu yönetici<select name="ownerId" required></select></label>
+        <label>Son takip zamanı<input type="datetime-local" name="dueAt" required></label>
+        <label>Öncelik<select name="priority" required><option>Düşük</option><option selected>Orta</option><option>Yüksek</option><option>Acil</option></select></label>
+        <label class="full">Kişi / firma / bölüm<input name="contact" placeholder="Örn. ABC Servis · Ahmet Bey"></label>
+        <label class="full">Açıklama ve beklenen sonuç<textarea name="note" rows="4" placeholder="Görüşülecek konu, istenecek termin veya beklenen yanıt..."></textarea></label>
+      </div></div>
+      <div class="modal-actions"><button type="button" class="secondary-btn follow-up-close">Vazgeç</button><button type="submit" class="primary-btn">Takibi Kaydet</button></div>
+    </form>
+  </div>
+
+  <div class="modal-backdrop hidden" id="deleteAllOrdersModal" role="dialog" aria-modal="true" aria-labelledby="deleteAllOrdersTitle">
+    <form class="modal small-modal" id="deleteAllOrdersForm">
+      <div class="modal-head"><div><span class="modal-eyebrow danger-eyebrow">KALICI SİLME</span><h2 id="deleteAllOrdersTitle">Tüm İş Emirlerini Sil</h2><p>Bu işlem geçmiş ve açık bütün iş emirlerini sistemden kaldırır.</p></div><button type="button" class="icon-btn delete-orders-close" aria-label="Pencereyi kapat">×</button></div>
+      <div class="form-section"><div class="delete-orders-warning"><strong id="deleteAllOrdersCount">0 iş emri kalıcı olarak silinecek.</strong><p>Makine, personel, stok kartları ve satın alma kayıtları korunur. Stoktan kullanılan miktarlar geri eklenir.</p></div><label class="delete-confirm-label">Onaylamak için <b>SİL</b> yazın<input name="confirmation" autocomplete="off" spellcheck="false" placeholder="SİL" required></label></div>
+      <div class="modal-actions"><button type="button" class="secondary-btn delete-orders-close">Vazgeç</button><button type="submit" class="danger-btn" id="confirmDeleteAllOrdersBtn" disabled>Tüm İş Emirlerini Kalıcı Sil</button></div>
+    </form>
+  </div>
+
+  <div class="modal-backdrop hidden" id="completionModal" role="dialog" aria-modal="true" aria-labelledby="completionTitle">
+    <form class="modal completion-modal" id="completionForm">
+      <div class="modal-head"><div><span class="modal-eyebrow">OPERATÖR TEYİDİ</span><h2 id="completionTitle">İş Sonuç Formu</h2><p id="completionSubtitle">Arıza, çalışma süreleri ve yapılan işlemi kaydedin.</p></div><button type="button" class="icon-btn completion-close">×</button></div>
+      <input type="hidden" name="orderId">
+      <div class="completion-summary" id="completionSummary"></div>
+      <div class="form-section linked-maintenance-section hidden" id="linkedMaintenanceSection"><div class="section-heading"><h3>Bakım Kartı Kontrol Listesi</h3><span id="linkedMaintenanceCardName"></span></div><div class="linked-checklist" id="linkedMaintenanceChecklist"></div><div class="linked-measurements" id="linkedMaintenanceMeasurements"></div></div>
+      <div class="form-section"><div class="section-heading"><h3>Arıza ve yapılan işlem</h3><span>İlgili arıza tanımı ve nedeni zorunludur; birden fazla seçim yapılabilir</span></div><div class="fault-choice-layout"></div><p class="fault-selection-error hidden" id="faultSelectionError" role="alert"></p><div class="form-grid fault-other-fields"><label class="full">Diğer arıza tanımı<input name="otherFault"></label><label>Diğer elektrik arıza tanımı<input name="otherElectricalFault"></label><label>Diğer elektrik arıza nedeni<input name="otherElectricalCause"></label><label>Diğer mekanik arıza tanımı<input name="otherMechanicalFault"></label><label>Diğer mekanik arıza nedeni<input name="otherMechanicalCause"></label><label class="full">Yapılan işlem ve teknik sonuç<textarea required name="workPerformed" rows="4" placeholder="Uygulanan müdahale, değişen parça ve test sonucunu yazın..."></textarea></label></div></div>
+      <div class="form-section"><h3>Çalışma ve ara verme süreleri</h3><div class="form-grid"><label>İşe başlangıç<input required type="datetime-local" name="startTime"></label><label>İşlem bitirme<input required type="datetime-local" name="completionTime"></label><label>Ara verme başlangıcı<input type="datetime-local" name="pauseStart"></label><label>Ara verme bitişi<input type="datetime-local" name="pauseEnd"></label><label class="full">Ara verme nedeni<textarea name="pauseReason" rows="2" placeholder="Ara verildiyse nedenini yazın"></textarea></label><label>Arıza duruş süresi (otomatik)<input readonly type="number" min="0" name="downtimeMinutes" value="0"><span class="subtext">Arıza başlangıcı ile iş bitişi arasından hesaplanır</span></label></div><div class="time-summary" id="completionTimeSummary"><div><span>Brüt çalışma</span><b id="grossWorkTime">0 dk</b></div><div><span>Ara verme</span><b id="pauseWorkTime">0 dk</b></div><div><span>Net çalışma</span><b id="netWorkTime">0 dk</b></div></div><div class="pause-history-box" id="completionPauseHistory"></div></div>
+      <div class="form-section"><div class="section-heading"><h3>Kullanılan malzemeler</h3><button type="button" class="secondary-btn" id="addPurchasedMaterialBtn">＋ Malzeme Satırı Ekle</button></div><p class="section-help">Operatör yalnızca kullanılan malzeme ve miktarı kaydeder. Fiyatlandırma yönetici onayı sırasında yapılır.</p><div class="purchased-materials" id="purchasedMaterialRows"></div></div>
+      <div class="form-section"><div class="section-heading"><h3>Yardımcı personel</h3><span>Her kişi için çalışma ve ara verme süresi kaydedilir</span></div><div class="crew-grid"><fieldset><legend><label><input type="checkbox" name="hasSecond"> İkinci kişi var</label></legend><div class="crew-fields" data-crew="second"><label>İkinci kişi<select name="secondTechnician"></select></label><label>İşe başlama<input type="datetime-local" name="secondStart"></label><label>İş bitirme<input type="datetime-local" name="secondFinish"></label><label>Ara verme<input type="datetime-local" name="secondPauseStart"></label><label>Ara bitirme<input type="datetime-local" name="secondPauseEnd"></label></div></fieldset><fieldset><legend><label><input type="checkbox" name="hasThird"> Üçüncü kişi var</label></legend><div class="crew-fields" data-crew="third"><label>Üçüncü kişi<select name="thirdTechnician"></select></label><label>İşe başlama<input type="datetime-local" name="thirdStart"></label><label>İş bitirme<input type="datetime-local" name="thirdFinish"></label><label>Ara verme<input type="datetime-local" name="thirdPauseStart"></label><label>Ara bitirme<input type="datetime-local" name="thirdPauseEnd"></label></div></fieldset></div></div>
+      <div class="form-section"><h3>Ekler ve teyit</h3><div class="form-grid"><label class="full file-field">Fotoğraf / belge ekleri<input type="file" name="attachments" multiple><small>Dosyaların adları iş emrine kaydedilir.</small></label><label class="full confirmation-check"><input required type="checkbox" name="operatorConfirm"><span>Bilgilerin doğru olduğunu teyit ediyor ve işi yönetici onayına gönderiyorum.</span></label></div></div>
+      <div class="modal-actions sticky-actions"><button type="button" class="secondary-btn completion-close">Vazgeç</button><button type="submit" class="primary-btn">✓ Teyit Ver ve Gönder</button></div>
+    </form>
+  </div>
+
+  <div class="modal-backdrop hidden" id="completionTimeModal" role="dialog" aria-modal="true" aria-labelledby="completionTimeTitle">
+    <form class="modal small-modal" id="completionTimeForm">
+      <div class="modal-head"><div><span class="modal-eyebrow">ÇALIŞMA SAATİ</span><h2 id="completionTimeTitle">Saati Düzenle</h2><p>Değişiklik yalnızca Kaydet ile uygulanır.</p></div><button type="button" class="icon-btn completion-time-close" aria-label="Kapat">×</button></div>
+      <div class="form-section"><div class="completion-time-grid"><label>Tarih<input type="date" name="date" required></label><label>Saat<select name="hour" required></select></label><label>Dakika<select name="minute" required></select></label></div></div>
+      <div class="modal-actions"><button type="button" class="secondary-btn hidden" id="completionTimeClear">Temizle</button><button type="button" class="secondary-btn completion-time-close">Vazgeç</button><button type="submit" class="primary-btn">Kaydet</button></div>
+    </form>
+  </div>
+
+  <div class="modal-backdrop hidden" id="costApprovalModal" role="dialog" aria-modal="true" aria-labelledby="costApprovalTitle">
+    <form class="modal cost-approval-modal" id="costApprovalForm">
+      <div class="modal-head"><div><span class="modal-eyebrow">YÖNETİCİ MALİYET ONAYI</span><h2 id="costApprovalTitle">İş Emri Maliyetlerini Onayla</h2><p>Operatörün süre ve malzeme kayıtlarını fiyatlandırın.</p></div><button type="button" class="icon-btn cost-approval-close">×</button></div>
+      <input type="hidden" name="orderId">
+      <div class="completion-summary" id="costApprovalSummary"></div>
+      <div class="form-section sap-reference-section"><div class="section-heading"><div><h3>SAP ve satın alma referansları</h3><span>Bu numaralar ileride SAP entegrasyonunda iş emrinin eşleştirme anahtarları olacaktır.</span></div></div><div class="form-grid"><label>SAP bildirim durumu<select name="managerNotificationStatus"><option>Yok</option><option>Numara Bekliyor</option><option>SAP Bildirimi Açıldı</option><option>SAP ile Eşleşti</option></select></label><label>SAP bildirim numarası<input name="managerNotificationNo" placeholder="Örn. 10016125"></label><label class="full">Satın alma sipariş numarası<input name="managerPurchaseOrderNo" placeholder="Örn. 4500012345"></label></div></div>
+      <div class="form-section"><div class="section-heading"><h3>İş emri çalışma saatleri</h3><span>Başlama, bitirme ve ara verme zamanlarını yönetici düzeltebilir</span></div><div class="form-grid manager-order-times"><label>İşe başlama<input type="datetime-local" name="managerStartTime" required></label><label>İşi bitirme<input type="datetime-local" name="managerCompletionTime" required></label><label>Ara başlangıcı<input type="datetime-local" name="managerPauseStart"></label><label>Ara bitişi<input type="datetime-local" name="managerPauseEnd"></label><label class="full">Ara verme nedeni<textarea name="managerPauseReason" rows="2" placeholder="Ara verildiyse nedeni zorunludur"></textarea></label></div></div>
+      <div class="form-section manager-factory-section">
+        <div class="section-heading"><div><h3>Fabrika çalışma takvimi</h3><span>Ana, ikinci ve üçüncü kişinin çalışma tarihleri otomatik listelenir. Tatil günleri süreye katılmaz.</span></div><button type="button" class="secondary-btn" id="managerAddFactoryDayBtn">＋ Gün Ekle</button></div>
+        <div class="manager-factory-summary"><span>Hesaplanan arıza duruş süresi</span><b id="managerCalculatedDowntime">0 dk</b></div>
+        <div class="manager-factory-schedule" id="managerFactoryScheduleRows"></div>
+      </div>
+      <div class="form-section" id="managerReliabilityScope">
+        <div class="section-heading"><div><h3>MTTR / MTBF hesap kapsamı</h3><span id="managerReliabilityScopeStatus">Firma dışı veya güvenilirlik hesabını etkilememesi gereken işleri ayrı ayrı hariç tutun.</span></div></div>
+        <div class="manager-reliability-scope"><label><input type="checkbox" name="includeInMttr" checked><span><b>MTTR hesabına dahil et</b><small>Net onarım süresi ve arıza adedi ortalamaya katılır.</small></span></label><label><input type="checkbox" name="includeInMtbf" checked><span><b>MTBF hesabına dahil et</b><small>Arıza, arızalar arası çalışma hesabına katılır.</small></span></label><label class="manager-reliability-reason">Hariç tutma nedeni<input name="reliabilityExclusionReason" placeholder="Örn. Firma dışında yapılan iş"></label></div>
+      </div>
+      <div class="form-section"><div class="section-heading"><h3>İşçilik maliyeti ve kişi süreleri</h3><span>Her personelin saatleri, ara süresi ve saatlik ücreti düzenlenebilir</span></div><div class="manager-labor-list" id="managerLaborRows"></div><div class="manager-subtotal"><span>Toplam işçilik maliyeti</span><b id="managerLaborTotal">₺0</b></div></div>
+      <div class="form-section"><div class="section-heading"><div><h3>Malzeme maliyeti</h3><span>Stoktan seçin veya stok dışı malzemeyi elle girin</span></div><button type="button" class="secondary-btn" id="managerAddMaterialBtn">＋ Stok Dışı Ekle</button></div><div class="manager-stock-add"><label for="managerStockMaterialSelect">Stoktan ekle</label><div><select id="managerStockMaterialSelect" aria-label="Stok malzemesi seçin"><option value="">Stok kartı seçin</option></select><button type="button" class="secondary-btn" id="managerAddStockMaterialBtn">＋ Stoktan Ekle</button></div></div><div class="manager-material-list" id="managerMaterialRows"></div><div class="manager-subtotal"><span>Toplam malzeme maliyeti</span><b id="managerMaterialTotal">₺0</b></div></div>
+      <div class="form-section"><h3>Diğer maliyetler</h3><div class="form-grid"><label>Dış hizmet maliyeti (₺)<input type="number" min="0" step="0.01" name="serviceCost" value="0"></label><label>Diğer maliyet (₺)<input type="number" min="0" step="0.01" name="otherCost" value="0"></label></div><div class="manager-grand-total"><span>Genel iş emri maliyeti</span><b id="managerGrandTotal">₺0</b><small>İşçilik + malzeme + dış hizmet + diğer</small></div></div>
+      <div class="modal-actions sticky-actions"><button type="button" class="secondary-btn" id="managerReturnBtn">Düzeltme İste</button><button type="submit" class="primary-btn">✓ Maliyetleri Onayla ve İşi Kapat</button></div>
+    </form>
+  </div>
+
+  <div class="modal-backdrop hidden" id="stockWarningModal" role="alertdialog" aria-modal="true" aria-labelledby="stockWarningTitle" aria-describedby="stockWarningText">
+    <div class="modal small-modal"><div class="modal-head"><div><span class="modal-eyebrow">KRİTİK STOK</span><h2 id="stockWarningTitle">Uyarı Mesajı</h2><p>Onaylanırsa aşağıdaki malzemelerin stoku kritik seviyenin altına inecek.</p></div></div><div class="form-section"><p class="stock-warning-text" id="stockWarningText"></p></div><div class="modal-actions"><button type="button" class="secondary-btn" id="stockWarningCancelBtn">Vazgeç</button><button type="button" class="primary-btn" id="stockWarningConfirmBtn">Yine de Onayla</button></div></div>
+  </div>
+
+  <div class="modal-backdrop hidden" id="assetModal" role="dialog" aria-modal="true" aria-labelledby="assetModalTitle">
+    <form class="modal asset-modal" id="assetForm">
+      <input type="hidden" name="editAssetId">
+      <div class="modal-head"><div><span class="modal-eyebrow">MAKİNE / EKİPMAN KARTI</span><h2 id="assetModalTitle">Yeni Ekipman Ekle</h2><p>Teknik varlığı tanımlayın; iş emirlerinde seçilebilir hale gelsin.</p></div><button type="button" class="icon-btn asset-close">×</button></div>
+      <p class="asset-form-error hidden" id="assetFormError" role="alert"></p>
+      <div class="form-section asset-basic-section"><h3>Temel bilgiler</h3><div class="form-grid"><label class="full">Makine / ekipman adı<input required name="name" placeholder="Örn. PT211 Eksen Motoru"></label><label>PT / SAP / varlık kodu<input required name="code" placeholder="Örn. PT211 veya SAP ekipman no"></label><label>Ekipman sınıfı<div class="asset-category-control"><select id="assetCategorySelect" name="category"></select><button type="button" class="secondary-btn" id="addAssetCategoryBtn">＋ Sınıf Ekle</button></div></label><label>Bölüm<input name="department" list="assetDepartmentOptions" placeholder="Talaşlı İmalat"></label><datalist id="assetDepartmentOptions"></datalist><label>Tezgah Puanı<select name="machineScore"><option value="">Tezgah Puanı Seçiniz</option><option value="1">1</option><option value="2">2</option><option value="3">3</option></select></label></div></div>
+      <details class="form-section form-collapsible"><summary><span>Hiyerarşi ve yönetim bilgileri</span><small>İsteğe bağlı</small></summary><div class="form-grid"><label>Varlık seviyesi<select name="assetLevel"><option>Makine</option><option>Hat</option><option>Komponent</option><option>Tesis</option><option>Bölüm</option></select></label><label>Alt varlık<select name="parentAssetId"><option value="">Alt varlık yok</option></select></label><label>Masraf yeri<input name="costCenter" placeholder="2230 Bakım Onarım"></label><label>Sorumlu birim<input name="responsibleUnit" placeholder="Bakım Müdürlüğü"></label></div></details>
+      <details class="form-section form-collapsible"><summary><span>Teknik bilgiler ve yaşam döngüsü</span><small>İsteğe bağlı</small></summary><div class="form-grid"><label>SAP Ekipman No<input name="sapEquipmentNo" inputmode="numeric" placeholder="Örn. 10007367"></label><label>Ekipman kW<input type="number" min="0" step="0.01" name="equipmentKw" placeholder="Örn. 39"></label><label>Üretim yeri<input name="productionPlace"></label><label>Teknik birim<input name="technicalUnit"></label><label>Üretim yılı<input type="number" min="1900" max="2100" name="manufactureYear"></label><label>Üretici<input name="manufacturer"></label><label>Model<input name="model"></label><label>Seri numarası<input name="serialNo"></label><label>Devreye alma tarihi<input type="date" name="commissionDate"></label><label>Garanti bitiş tarihi<input type="date" name="warrantyEnd"></label><label>Beklenen ömür (yıl)<input type="number" min="0" step="0.5" name="expectedLifeYears"></label><label>Yenileme değeri (₺)<input type="number" min="0" step="0.01" name="replacementValue"></label><label>Son bakım tarihi<input type="date" name="lastMaintenance"></label><label>Bakım periyodu (gün)<input type="number" min="1" name="maintenanceInterval" value="90"></label><label>Sayaç türü<select name="meterType"><option>Çalışma Saati</option><option>Çevrim</option><option>Kilometre</option><option>Yok</option></select></label><label>Sayaç değeri<input type="number" min="0" step="0.01" name="meterValue" value="0"></label><label>Durum<select name="status"><option>Çalışıyor</option><option>Bakım Gerekli</option><option>Kontrol Gerekli</option><option>Devre Dışı</option></select></label><label class="full">Hava valfleri<textarea name="airValves" rows="2"></textarea></label><label class="full">Yağlar<textarea name="lubricants" rows="2"></textarea></label><label class="full">Liste notu<textarea name="machineNote" rows="2"></textarea></label><label class="full">Makine görseli<input type="file" name="imageFile" accept="image/jpeg,image/png,image/webp"><span class="subtext">JPG, PNG veya WebP; en fazla 1,5 MB.</span></label><label class="full">Teknik açıklama<textarea name="technicalDescription" rows="3"></textarea></label></div></details>
+      <div class="modal-actions"><button type="button" class="secondary-btn asset-back">← Geri</button><button type="button" class="secondary-btn asset-close">Vazgeç</button><button type="submit" class="primary-btn">Makine / Ekipmanı Kaydet</button></div>
+    </form>
+  </div>
+
+  <div class="modal-backdrop hidden" id="simpleModal" role="dialog" aria-modal="true">
+    <form class="modal small-modal" id="simpleForm">
+      <div class="modal-head"><div><span class="modal-eyebrow" id="simpleEyebrow">KAYIT</span><h2 id="simpleTitle">Yeni Kayıt</h2><p id="simpleDescription"></p></div><button type="button" class="icon-btn simple-close">×</button></div>
+      <div class="form-section"><div class="form-grid" id="simpleFields"></div></div>
+      <div class="modal-actions"><button type="button" class="secondary-btn simple-close">Vazgeç</button><button type="submit" class="primary-btn">Kaydet</button></div>
+    </form>
+  </div>
+
+  <div class="modal-backdrop hidden" id="budgetPlanModal" role="dialog" aria-modal="true" aria-labelledby="budgetPlanTitle">
+    <form class="modal small-modal" id="budgetPlanForm"><div class="modal-head"><div><span class="modal-eyebrow">BAKIM BÜTÇESİ</span><h2 id="budgetPlanTitle">Bütçe Tanımla</h2><p>Satın alma bütçesini birleşik, işçilik bütçesini ayrı planlayın.</p></div><button type="button" class="icon-btn budget-plan-close">×</button></div><input type="hidden" name="id"><div class="form-section"><div class="form-grid"><label>Yıl<input required type="number" name="year" min="2020" max="2100"></label><label>Ay<select name="month"><option value="">Yıllık / aya bağlı değil</option><option value="01">Ocak</option><option value="02">Şubat</option><option value="03">Mart</option><option value="04">Nisan</option><option value="05">Mayıs</option><option value="06">Haziran</option><option value="07">Temmuz</option><option value="08">Ağustos</option><option value="09">Eylül</option><option value="10">Ekim</option><option value="11">Kasım</option><option value="12">Aralık</option></select></label><label>Bütçe grubu<select required name="category"><option>Satın Alma (Malzeme + Dış Hizmet)</option><option>İşçilik</option></select></label><label>Tutar (₺)<input required type="number" min="0" step="0.01" name="amount"></label><label>Faaliyet birimi<input name="activityUnit" placeholder="Örn. Talaşlı İmalat"></label><label>Masraf yeri<input name="costCenter" placeholder="Örn. 2230 Bakım Onarım"></label><label class="full">Açıklama<textarea name="note" rows="2"></textarea></label></div></div><div class="modal-actions"><button type="button" class="secondary-btn budget-plan-close">Vazgeç</button><button type="submit" class="primary-btn">Bütçeyi Kaydet</button></div></form>
+  </div>
+
+  <div class="modal-backdrop hidden" id="purchaseRecordModal" role="dialog" aria-modal="true" aria-labelledby="purchaseRecordTitle">
+    <form class="modal small-modal" id="purchaseRecordForm"><div class="modal-head"><div><span class="modal-eyebrow">SATIN ALMA / GERÇEKLEŞEN</span><h2 id="purchaseRecordTitle">Satın Alma Kaydı</h2><p>Malzeme ve dış hizmet detayını veya manuel işçilik gerçekleşenini bütçeye bağlayın.</p></div><button type="button" class="icon-btn purchase-record-close">×</button></div><input type="hidden" name="id"><div class="form-section"><div class="form-grid"><label>Tarih<input required type="date" name="date"></label><label>Durum<select required name="status"><option>Talep</option><option>Sipariş</option><option>Faturalaştı</option><option>Ödendi</option><option>İptal</option></select></label><label>Gerçekleşen türü<select required name="category"><option>Malzeme</option><option>Dış Hizmet</option><option>İşçilik</option><option>Diğer</option></select></label><label>Tutar (₺)<input required type="number" min="0" step="0.01" name="amount"></label><label>Tedarikçi<input name="supplier"></label><label>Satın alma sipariş no<input name="purchaseOrderNo"></label><label>Fatura no<input name="invoiceNo"></label><label>Bağlı iş emri<select name="orderId" id="purchaseOrderSelect"><option value="">İş emrine bağlı değil</option></select></label><label>Faaliyet birimi<input name="activityUnit"></label><label>Masraf yeri<input name="costCenter"></label><label class="full">Açıklama<textarea name="note" rows="2"></textarea></label></div></div><div class="modal-actions"><button type="button" class="secondary-btn purchase-record-close">Vazgeç</button><button type="submit" class="primary-btn">Kaydı Tamamla</button></div></form>
+  </div>
+
+  <div class="modal-backdrop hidden" id="costImportModal" role="dialog" aria-modal="true" aria-labelledby="costImportTitle">
+    <form class="modal cost-import-modal" id="costImportForm">
+      <div class="modal-head"><div><span class="modal-eyebrow">MALİYET BİRİMİ EXCEL AKTARIMI</span><h2 id="costImportTitle">Gider Dosyasını Kontrol Et</h2><p>Kayıtlar eklenmeden önce dönem, net tutar ve mükerrer satırlar kontrol edilir.</p></div><button type="button" class="icon-btn cost-import-close" aria-label="Pencereyi kapat">×</button></div>
+      <div class="cost-import-preview" id="costImportPreview"></div>
+      <div class="modal-actions"><button type="button" class="secondary-btn cost-import-close">Vazgeç</button><button type="submit" class="primary-btn" id="confirmCostImportBtn">Kayıtları Aktar</button></div>
+    </form>
+  </div>
+
+  <div class="modal-backdrop hidden" id="cloudModal" role="dialog" aria-modal="true" aria-labelledby="cloudModalTitle">
+    <form class="modal small-modal" id="cloudLoginForm">
+      <div class="modal-head"><div><span class="modal-eyebrow">SUPABASE</span><h2 id="cloudModalTitle">Bulut Veri Bağlantısı</h2><p>Yönetici hesabıyla giriş yaparak bu tarayıcıdaki kayıtları merkezi veritabanıyla eşitleyin.</p></div><button type="button" class="icon-btn cloud-close" aria-label="Pencereyi kapat">×</button></div>
+      <div class="cloud-status-card" id="cloudStatusCard"><span class="cloud-status-dot"></span><div><strong id="cloudStatusTitle">Yerel kullanım</strong><small id="cloudStatusText">Supabase ayarları henüz yapılmadı.</small></div></div>
+      <div class="form-section" id="cloudLoginFields"><div class="form-grid"><label class="full">Yönetici e-postası<input name="email" type="email" autocomplete="username" required></label><label class="full">Şifre<input name="password" type="password" autocomplete="current-password" required></label></div></div>
+      <p class="cloud-error hidden" id="cloudError" role="alert"></p>
+      <div class="modal-actions"><button type="button" class="secondary-btn cloud-close">Kapat</button><button type="button" class="secondary-btn hidden" id="cloudSignOutBtn">Oturumu Kapat</button><button type="button" class="secondary-btn hidden" id="cloudPullBtn">Buluttan Al</button><button type="button" class="secondary-btn hidden" id="cloudPushBtn">Buluta Gönder</button><button type="submit" class="primary-btn" id="cloudSignInBtn">Bağlan</button></div>
+    </form>
+  </div>
+
+  <div class="modal-backdrop hidden" id="holdReasonModal" role="dialog" aria-modal="true" aria-labelledby="holdReasonTitle">
+    <form class="modal small-modal hold-reason-modal" id="holdReasonForm">
+      <div class="modal-head"><div><span class="modal-eyebrow">BEKLEME KAYDI</span><h2 id="holdReasonTitle">İş neden beklemeye alınıyor?</h2><p>Ara verme başlangıç saati otomatik kaydedilecektir.</p></div><button type="button" class="icon-btn hold-reason-close" aria-label="Pencereyi kapat">×</button></div>
+      <input type="hidden" name="orderId">
+      <div class="form-section"><div class="form-grid"><label class="full">Bekleme nedeni<select name="reasonType" required><option value="">Neden seçin</option><option>Malzeme / yedek parça bekleniyor</option><option>Üretim / makine uygunluğu bekleniyor</option><option>Dış servis bekleniyor</option><option>Enerji / izin / güvenlik bekleniyor</option><option>Personel / ekipman bekleniyor</option><option>Diğer</option></select></label><label class="full">Açıklama<textarea name="reasonDetail" rows="3" required placeholder="Bekleme nedenini kısaca açıklayın"></textarea></label></div></div>
+      <div class="modal-actions"><button type="button" class="secondary-btn hold-reason-close">Vazgeç</button><button type="submit" class="primary-btn">Ⅱ Beklemeye Al</button></div>
+    </form>
+  </div>
+
+  <div class="modal-backdrop hidden" id="safetyConfirmModal" role="dialog" aria-modal="true" aria-labelledby="safetyConfirmTitle">
+    <form class="modal small-modal safety-confirm-modal" id="safetyConfirmForm">
+      <div class="modal-head"><div><span class="modal-eyebrow">İŞ GÜVENLİĞİ TEYİDİ</span><h2 id="safetyConfirmTitle">İşe başlamadan önce</h2><p>Çalışmaya başlamadan önce aşağıdaki saha kontrollerini teyit edin.</p></div><button type="button" class="icon-btn safety-confirm-close" aria-label="Pencereyi kapat">×</button></div>
+      <input type="hidden" name="orderId"><input type="hidden" name="action" value="start">
+      <div class="form-section safety-check-list">
+        <label><input type="checkbox" name="areaSecured" required><span><strong>Çalışma alanını güvenli hale aldım</strong><small>Alanı çevirdim; yetkisiz kişilerin girişini ve beklenmeyen hareketi önledim.</small></span></label>
+        <label><input type="checkbox" name="energyControlled" required><span><strong>Enerji kaynaklarını kontrol ettim</strong><small>Gerekiyorsa makineyi durdurdum, enerjiyi kestim ve kilitleme/etiketleme (LOTO) uyguladım.</small></span></label>
+        <label><input type="checkbox" name="ppeReady" required><span><strong>Uygun KKD ekipmanlarım hazır</strong><small>İş için gerekli kişisel koruyucu donanımları kullanıyorum.</small></span></label>
+        <label class="safety-note-label"><span><strong>Ek güvenlik notu</strong><small>İsteğe bağlı — mikrofonla da yazabilirsiniz.</small></span><textarea name="safetyNote" rows="2" placeholder="Varsa özel risk veya alınan ek önlem..."></textarea></label>
+      </div>
+      <div class="modal-actions"><button type="button" class="secondary-btn safety-confirm-close">Vazgeç</button><button type="submit" class="primary-btn">✓ Teyit Et ve İşe Başla</button></div>
+    </form>
+  </div>
+
+  <div class="modal-backdrop hidden" id="scadaMachineModal">
+    <form class="order-modal scada-machine-modal" id="scadaMachineForm">
+      <div class="modal-head"><div><span class="modal-eyebrow">SCADA NOKTASI</span><h2 id="scadaMachineModalTitle">Makine Noktası Ekle</h2><p>PT numarasını, makine adını, bölümünü ve anlık durumunu girin.</p></div><button type="button" class="icon-btn scada-machine-close" aria-label="Pencereyi kapat">×</button></div>
+      <input type="hidden" name="id">
+      <div class="form-section"><div class="form-grid">
+        <label class="full">Makine bakım kartıyla eşleştir<select name="assetId"><option value="">Kart seçmeden elle gir</option></select><small>Bir kart seçildiğinde PT numarası ve makine adı karttan güncel tutulur.</small></label>
+        <label>PT Numarası<input name="ptNo" required placeholder="Örn. PT304"></label>
+        <label>Makine adı<input name="name" required placeholder="Örn. CNC Torna 1"></label>
+        <label>Bölüm<input name="department" list="scadaDepartmentOptions" required placeholder="Talaşlı İmalat"></label>
+        <datalist id="scadaDepartmentOptions"><option value="Talaşlı İmalat"><option value="Kaynak"><option value="Montaj"></datalist>
+        <label>Durum<select name="status" required><option value="running">Çalışıyor</option><option value="stopped">Duruşta</option></select></label>
+        <label class="full">Duruş açıklaması<textarea name="stopReason" rows="3" placeholder="Duruştaysa arıza veya bekleme nedenini yazın"></textarea></label>
+      </div></div>
+      <div class="modal-actions"><button type="button" class="secondary-btn scada-machine-close">Vazgeç</button><button type="button" class="danger-btn hidden" id="scadaMachineDelete">Sil</button><button type="submit" class="primary-btn">Kaydet</button></div>
+    </form>
+  </div>
+
+  <div class="modal-backdrop hidden" id="assetQrModal" role="dialog" aria-modal="true" aria-labelledby="assetQrTitle">
+    <div class="modal small-modal asset-qr-modal">
+      <div class="modal-head"><div><span class="modal-eyebrow">MAKİNE QR ETİKETİ</span><h2 id="assetQrTitle">Makineye Hızlı Erişim</h2><p id="assetQrSubtitle">QR kodu makine üzerine yapıştırın.</p></div><button type="button" class="icon-btn asset-qr-close" aria-label="Kapat">×</button></div>
+      <div class="asset-qr-body"><div id="assetQrCode" aria-label="Makine QR kodu"></div><div class="asset-qr-info"><strong id="assetQrMachine"></strong><span id="assetQrLocation"></span><input id="assetQrLink" readonly aria-label="Makine bağlantısı"></div></div>
+      <p class="section-help" id="assetQrHelp">Telefon kamerasıyla okutulduğunda makine kartı açılır.</p>
+      <div class="modal-actions"><button type="button" class="secondary-btn asset-qr-close">Kapat</button><button type="button" class="secondary-btn" id="copyAssetQrLink">Bağlantıyı Kopyala</button><button type="button" class="primary-btn" id="assetQrRequestBtn">＋ Bu Makine İçin Talep</button></div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop hidden" id="removeTechnicianModal" role="alertdialog" aria-modal="true" aria-labelledby="removeTechnicianTitle" aria-describedby="removeTechnicianMessage">
+    <div class="modal small-modal"><div class="modal-head"><div><span class="modal-eyebrow">PERSONEL YÖNETİMİ</span><h2 id="removeTechnicianTitle">Personeli Kaldır?</h2><p>Bu işlem personeli aktif listeden çıkarır.</p></div></div><div class="form-section"><p class="stock-warning-text" id="removeTechnicianMessage"></p></div><div class="modal-actions"><button type="button" class="secondary-btn" id="removeTechnicianCancelBtn">Vazgeç</button><button type="button" class="danger-btn" id="removeTechnicianConfirmBtn">Personeli Kaldır</button></div></div>
+  </div>
+
+  <div class="modal-backdrop hidden" id="removeFaultOptionModal" role="alertdialog" aria-modal="true" aria-labelledby="removeFaultOptionTitle" aria-describedby="removeFaultOptionMessage">
+    <div class="modal small-modal"><div class="modal-head"><div><span class="modal-eyebrow">ARIZA LİSTESİ</span><h2 id="removeFaultOptionTitle">Seçenek Kaldırılsın mı?</h2><p id="removeFaultOptionMessage"></p></div></div><div class="modal-actions"><button type="button" class="secondary-btn" id="removeFaultOptionCancel">Vazgeç</button><button type="button" class="danger-btn" id="removeFaultOptionConfirm">Listeden Kaldır</button></div></div>
+  </div>
+
+  <div class="toast hidden" id="toast"><span>✓</span><p></p></div>
+  <script src="supabase-config.js"></script>
+  <script src="supabase-cloud.js"></script>
+  <script src="vendor/qrcode.min.js"></script>
+  <script src="vendor/xlsx.full.min.js"></script>
+  <script src="app.js?v=20260929-supabase-release-v1"></script>
+</body>
+</html>
