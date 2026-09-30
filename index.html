@@ -7,7 +7,7 @@
   <meta name="description" content="Kurumsal bakım, varlık ve iş emri yönetim sistemi">
   <meta name="theme-color" content="#0b8174">
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="stylesheet" href="styles.css?v=20260930-first-password-v1">
+  <link rel="stylesheet" href="styles.css?v=20260930-machine-import-v1">
   <link rel="stylesheet" href="fault-catalog.css?v=20260929-time-save">
   <link rel="stylesheet" href="completion-time.css?v=20260929-time-save">
   <link rel="stylesheet" href="avatar-alignment.css?v=20260929-avatar-center">
@@ -220,7 +220,7 @@
       </section>
 
       <section class="view" id="assetsView">
-        <div class="view-intro"><div><h2>Makine Varlık Yönetimi</h2><p>Makine sağlığı, güvenilirlik, bakım geçmişi ve kritik yedek parçaları tek karttan yönetin.</p></div><div class="intro-actions"><button class="secondary-btn" id="exportMachineCardsBtn">↧ Yedek Al</button><button class="primary-btn" id="addAssetBtn">＋ Makine Kartı Ekle</button></div></div>
+        <div class="view-intro"><div><h2>Makine Varlık Yönetimi</h2><p>Makine sağlığı, güvenilirlik, bakım geçmişi ve kritik yedek parçaları tek karttan yönetin.</p></div><div class="intro-actions"><input class="hidden" id="importMachineCardsFile" type="file" accept=".json,application/json"><button class="secondary-btn" id="importMachineCardsBtn" type="button">⇧ JSON İçe Aktar</button><button class="secondary-btn" id="exportMachineCardsBtn">↧ Yedek Al</button><button class="primary-btn" id="addAssetBtn">＋ Makine Kartı Ekle</button></div></div>
         <div class="asset-summary" id="assetSummary"></div>
         <details class="panel asset-unit-cost-panel" id="assetUnitCostPanel"><summary><div><h2>Faaliyet Birimi Maliyetleri</h2><p>Birime tıklayarak o bölümdeki makine kartlarını süzebilirsiniz.</p></div><span class="asset-cost-toggle"><b class="cost-label-closed">Göster</b><b class="cost-label-open">Gizle</b><i>⌄</i></span></summary><div class="table-wrap"><table><thead><tr><th>Faaliyet Birimi</th><th>Makine</th><th>İş Emri</th><th>İşçilik</th><th>Malzeme</th><th>Dış Hizmet</th><th>Diğer</th><th>Toplam</th></tr></thead><tbody id="assetUnitCostTable"></tbody></table></div></details>
         <section class="panel asset-catalog-panel"><div class="table-toolbar"><label class="search-box"><span>⌕</span><input id="assetSearch" type="search" placeholder="PT kodu, makine, bölüm veya konum ara"></label><select id="assetStatusFilter"><option value="">Tüm durumlar</option><option value="running">Çalışıyor</option><option value="breakdown">Arızalı / Bakımda</option><option value="planned">Planlı Bakımda</option><option value="attention">Kontrol Gerekli</option><option value="offline">Devre Dışı</option></select></div><div class="asset-state-filters" id="assetStateFilters" aria-label="Makine durum filtreleri"></div><div class="machine-maintenance-grid" id="assetCardGrid"></div><table hidden><tbody id="assetsTable"></tbody></table><div class="load-more" id="assetMoreWrap"><button class="secondary-btn" id="assetMoreBtn">Daha Fazla Makine Göster</button></div></section>
@@ -618,11 +618,16 @@
     <div class="modal small-modal"><div class="modal-head"><div><span class="modal-eyebrow">ARIZA LİSTESİ</span><h2 id="removeFaultOptionTitle">Seçenek Kaldırılsın mı?</h2><p id="removeFaultOptionMessage"></p></div></div><div class="modal-actions"><button type="button" class="secondary-btn" id="removeFaultOptionCancel">Vazgeç</button><button type="button" class="danger-btn" id="removeFaultOptionConfirm">Listeden Kaldır</button></div></div>
   </div>
 
+  <div class="modal-backdrop hidden" id="machineImportModal" role="dialog" aria-modal="true" aria-labelledby="machineImportTitle">
+    <div class="modal small-modal"><div class="modal-head"><div><span class="modal-eyebrow">MAKİNE KARTLARI</span><h2 id="machineImportTitle">JSON Aktarımını Kontrol Et</h2><p id="machineImportFileName"></p></div><button type="button" class="icon-btn machine-import-close" aria-label="Kapat">×</button></div><div class="form-section"><div class="machine-import-summary" id="machineImportSummary"></div><p class="section-help">Aynı kodlu kartlar güncellenir, yeni kodlar eklenir. Mevcut tezgâh puanı, canlı durum, bakım geçmişi ve ilişkili kayıtlar korunur. Dosyadaki iş geçmişi ve sözleşmeler bu işlemde aktarılmaz.</p><p class="access-error hidden" id="machineImportError" role="alert"></p></div><div class="modal-actions"><button type="button" class="secondary-btn machine-import-close">Vazgeç</button><button type="button" class="primary-btn" id="confirmMachineImportBtn">Supabase'e Aktar</button></div></div>
+  </div>
+
   <div class="toast hidden" id="toast"><span>✓</span><p></p></div>
   <script src="supabase-config.js"></script>
-  <script src="supabase-cloud.js?v=20260930-first-password-v1"></script>
+  <script src="supabase-cloud.js?v=20260930-machine-import-v1"></script>
   <script src="vendor/qrcode.min.js"></script>
   <script src="vendor/xlsx.full.min.js"></script>
-  <script src="app.js?v=20260930-first-password-v1"></script>
+  <script src="app.js?v=20260930-machine-import-v1"></script>
+  <script src="machine-import.js?v=20260930-machine-import-v1"></script>
 </body>
 </html>

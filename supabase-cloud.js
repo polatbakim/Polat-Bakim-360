@@ -1,7 +1,7 @@
 (function(){
   const config=window.POLAT_BAKIM_CONFIG||{};
   const configured=Boolean(config.supabaseUrl&&config.supabasePublishableKey);
-  let client=null,profile=null,version=0,syncReady=false,saveTimer=null,subscription=null,initializing=null;
+  let client=null,profile=null,version=0,syncReady=false,saveTimer=null,activeSaves=0,subscription=null,initializing=null;
   const listeners=new Set();
 
   function emit(status,detail={}){
@@ -91,10 +91,10 @@
     if(error)throw error;if(!data){version=0;syncReady=true;emit('empty');return null}
     version=Number(data.version||0);syncReady=true;emit('synced',{updatedAt:data.updated_at});return data.payload
   }
-  async function pushState(payload){
+  async function pushState(payload,expectedVersion=version){
     await init();if(!client||!profile?.manager_access)return null;
     emit('syncing');
-    const {data,error}=await client.rpc('save_app_snapshot',{p_id:config.workspaceId||'polat-bakim-main',p_payload:payload,p_expected_version:version});
+    const {data,error}=await client.rpc('save_app_snapshot',{p_id:config.workspaceId||'polat-bakim-main',p_payload:payload,p_expected_version:expectedVersion});
     if(error)throw error;version=Number(data?.version??data?.[0]?.version??version+1);syncReady=true;emit('synced',{updatedAt:new Date().toISOString()});return data
   }
   async function pullOperatorState(){
@@ -110,7 +110,7 @@
   }
   function queueState(payload){
     if(!configured||config.syncEnabled===false||!profile?.manager_access||!syncReady)return;
-    clearTimeout(saveTimer);saveTimer=setTimeout(()=>pushState(payload).catch(error=>emit('error',{message:error.message})),900)
+    clearTimeout(saveTimer);saveTimer=setTimeout(()=>{saveTimer=null;activeSaves++;pushState(payload).catch(error=>emit('error',{message:error.message})).finally(()=>{activeSaves--})},900)
   }
   async function startRealtime(onRemote){
     if(!client||!profile)return;stopRealtime();
@@ -121,7 +121,7 @@
   }
   function stopRealtime(){if(client&&subscription)client.removeChannel(subscription);subscription=null}
   function onStatus(fn){listeners.add(fn);return()=>listeners.delete(fn)}
-  function getInfo(){return{configured,connected:Boolean(client&&profile),profile,version,syncReady}}
+  function getInfo(){return{configured,connected:Boolean(client&&profile),profile,version,syncReady,pendingSave:Boolean(saveTimer)||activeSaves>0}}
 
   window.PolatBakimCloud={configured,init,signIn,signInOperator,signInOperatorEmail,listProfiles,manageUser,changeOwnPassword,uploadLayout,downloadLayout,deleteLayout,signOut,pullState,pullOperatorState,pushState,pushOperatorOrder,queueState,startRealtime,onStatus,getInfo};
 })();
