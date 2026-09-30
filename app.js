@@ -486,6 +486,7 @@ async function initializeCloud(){
     if(!info.connected)return;
     try{
       const profile=info.profile;
+      if(profile.must_change_password){showFirstPasswordSetup(profile);return}
       if(profile.manager_access){const remote=await api.pullState();state=remote||emptyProductionState();mergeProductionProfiles(await api.listProfiles());currentApproverId=profile.id;operatorTechId='';if(!remote&&profile.is_admin)await api.pushState(state);else if(!remote)throw new Error('İlk merkezi kayıt Admin Yönetici tarafından oluşturulmalı.');renderAll();unlockAccess('manager',currentManager()||state.approvers.find(user=>user.id===profile.id))}
       else if(profile.operator_access){const remote=await api.pullOperatorState();if(!remote)throw new Error('Merkezi bakım verisi henüz oluşturulmadı.');applyCloudState(remote);mergeProductionProfiles([profile]);operatorTechId=profile.technician_id;currentApproverId='';unlockAccess('operator',techById(operatorTechId))}
       await api.startRealtime(value=>{try{applyCloudState(value)}catch(error){renderCloudStatus({status:'error',message:error.message})}})
@@ -1377,10 +1378,14 @@ function updateSidebarSession(user,role){
   if(!user)return;$('#sidebarSessionAvatar').textContent=user.initials||String(user.name||'—').split(/\s+/).map(x=>x[0]).slice(0,2).join('').toLocaleUpperCase('tr-TR');$('#sidebarSessionName').textContent=user.name||'Oturum';$('#sidebarSessionRole').textContent=role==='operator'?(user.role||'Operatör'):(user.isAdmin?'Admin Yönetici':'Yönetici');const accessNav=$('.nav-item[data-view="access"]');if(accessNav)accessNav.classList.toggle('hidden',role!=='manager'||!user.isAdmin)
 }
 function showAccessChoice(){
-  selectedAccessRole='';$('#accessRoleChoice').classList.remove('hidden');$('#accessLoginForm').classList.add('hidden');$('#accessError').classList.add('hidden');$('#accessLoginForm').reset()
+  selectedAccessRole='';$('#accessRoleChoice').classList.remove('hidden');$('#accessLoginForm').classList.add('hidden');$('#firstPasswordForm').classList.add('hidden');$('#firstPasswordForm').reset();$('#accessError').classList.add('hidden');$('#accessLoginForm').reset()
 }
 function showAccessRole(role){
-  selectedAccessRole=role;const operator=role==='operator',form=$('#accessLoginForm');form.elements.role.value=role;$('#accessUserSelect').placeholder=operator?'Operatör e-posta adresi':'Yönetici e-posta adresi';$('#accessRoleIcon').textContent=operator?'✓':'◆';$('#accessRoleTitle').textContent=operator?'Operatör':'Yönetici';$('#accessRoleChoice').classList.add('hidden');form.classList.remove('hidden');$('#accessError').classList.add('hidden');form.elements.password.value='';setTimeout(()=>$('#accessUserSelect').focus(),30)
+  selectedAccessRole=role;const operator=role==='operator',form=$('#accessLoginForm');form.elements.role.value=role;$('#accessUserSelect').placeholder=operator?'Operatör e-posta adresi':'Yönetici e-posta adresi';$('#accessRoleIcon').textContent=operator?'✓':'◆';$('#accessRoleTitle').textContent=operator?'Operatör':'Yönetici';$('#accessRoleChoice').classList.add('hidden');$('#firstPasswordForm').classList.add('hidden');form.classList.remove('hidden');$('#accessError').classList.add('hidden');form.elements.password.value='';setTimeout(()=>$('#accessUserSelect').focus(),30)
+}
+function showFirstPasswordSetup(profile){
+  if(!PRODUCTION_MODE)return;
+  accessRole='';selectedAccessRole=profile.manager_access?'manager':'operator';document.body.classList.add('access-locked');$('#accessRoleChoice').classList.add('hidden');$('#accessLoginForm').classList.add('hidden');$('#accessLoginForm').reset();const form=$('#firstPasswordForm');form.reset();$('#firstPasswordUserName').textContent=profile.full_name||profile.email||'Kullanıcı';$('#firstPasswordError').classList.add('hidden');form.classList.remove('hidden');setTimeout(()=>form.elements.currentPassword.focus(),30)
 }
 function unlockAccess(role,user){
   accessRole=role;sessionStorage.setItem(ACCESS_ROLE_SESSION_KEY,role);document.body.classList.remove('access-locked');document.body.classList.toggle('manager-mode',role==='manager');updateSidebarSession(user,role);syncDeletePermissionClasses();renderFailureOptionCatalog();
@@ -1390,7 +1395,7 @@ function unlockAccess(role,user){
 async function authenticateOperatorSession(id,password){
   if(PRODUCTION_MODE){
     const api=window.PolatBakimCloud;if(!api?.configured)throw new Error('Supabase bağlantısı henüz yapılandırılmadı.');
-    const profile=await api.signInOperatorEmail(id,password),remote=await api.pullOperatorState();
+    const profile=await api.signInOperatorEmail(id,password);if(profile.must_change_password){showFirstPasswordSetup(profile);return null}const remote=await api.pullOperatorState();
     if(!remote){await api.signOut();throw new Error('Merkezi bakım verisi henüz oluşturulmadı.')}
     applyCloudState(remote);mergeProductionProfiles([profile]);operatorTechId=profile.technician_id;operatorStatus='';currentApproverId='';sessionStorage.setItem(OPERATOR_SESSION_KEY,operatorTechId);sessionStorage.removeItem(MANAGER_SESSION_KEY);unlockAccess('operator',techById(operatorTechId));await api.startRealtime(value=>applyCloudState(value));return techById(operatorTechId)
   }
@@ -1402,7 +1407,7 @@ async function authenticateOperatorSession(id,password){
 async function authenticateManagerSession(id,password){
   if(PRODUCTION_MODE){
     const api=window.PolatBakimCloud;if(!api?.configured)throw new Error('Supabase bağlantısı henüz yapılandırılmadı.');
-    const profile=await api.signIn(id,password),remote=await api.pullState();
+    const profile=await api.signIn(id,password);if(profile.must_change_password){showFirstPasswordSetup(profile);return null}const remote=await api.pullState();
     if(!remote&&!profile.is_admin){await api.signOut();throw new Error('İlk merkezi kaydı Admin Yönetici oluşturmalıdır.')}
     state=remote||emptyProductionState();const directory=await api.listProfiles();mergeProductionProfiles(directory);currentApproverId=profile.id;operatorTechId='';operatorStatus='';sessionStorage.setItem(MANAGER_SESSION_KEY,profile.id);sessionStorage.removeItem(OPERATOR_SESSION_KEY);if(!remote)await api.pushState(state);renderAll();unlockAccess('manager',currentManager()||state.approvers.find(user=>user.id===profile.id));await api.startRealtime(value=>applyCloudState(value));return currentManager()
   }
@@ -1798,12 +1803,14 @@ document.addEventListener('click',event=>{
 $('#accessRoleChoice').addEventListener('click',event=>{const button=event.target.closest('[data-access-role]');if(button)showAccessRole(button.dataset.accessRole)});
 $('#accessBackBtn').addEventListener('click',showAccessChoice);
 $('#accessPasswordToggle').addEventListener('click',event=>{const input=$('#accessPassword'),show=input.type==='password';input.type=show?'text':'password';event.currentTarget.textContent=show?'Gizle':'Göster'});
-$('#accessLoginForm').addEventListener('submit',async event=>{event.preventDefault();const form=event.currentTarget,role=form.elements.role.value,id=form.elements.userId.value,password=form.elements.password.value,error=$('#accessError');error.classList.add('hidden');try{const user=role==='operator'?await authenticateOperatorSession(id,password):await authenticateManagerSession(id,password);form.reset();toast(`${user.name} olarak giriş yapıldı.`)}catch(err){error.textContent=err.message;error.classList.remove('hidden');form.elements.password.select()}});
+$('#accessLoginForm').addEventListener('submit',async event=>{event.preventDefault();const form=event.currentTarget,role=form.elements.role.value,id=form.elements.userId.value,password=form.elements.password.value,error=$('#accessError');error.classList.add('hidden');try{const user=role==='operator'?await authenticateOperatorSession(id,password):await authenticateManagerSession(id,password);form.reset();if(user)toast(`${user.name} olarak giriş yapıldı.`)}catch(err){error.textContent=err.message;error.classList.remove('hidden');form.elements.password.select()}});
+$('#firstPasswordForm').addEventListener('submit',async event=>{event.preventDefault();const form=event.currentTarget,error=$('#firstPasswordError'),button=form.querySelector('[type="submit"]'),currentPassword=form.elements.currentPassword.value,newPassword=form.elements.newPassword.value,confirmation=form.elements.confirmPassword.value;error.classList.add('hidden');if(newPassword.length<8||newPassword!==confirmation||newPassword===currentPassword){error.textContent=newPassword.length<8?'Yeni şifre en az 8 karakter olmalıdır.':newPassword!==confirmation?'Yeni şifreler eşleşmiyor.':'Yeni şifre geçici şifreden farklı olmalıdır.';error.classList.remove('hidden');return}button.disabled=true;try{await window.PolatBakimCloud.changeOwnPassword(currentPassword,newPassword);await lockAccess(selectedAccessRole);toast('Şifreniz değiştirildi. Yeni şifrenizle giriş yapın.')}catch(err){error.textContent=err.message;error.classList.remove('hidden')}finally{button.disabled=false}});
+$('#firstPasswordLogout').addEventListener('click',()=>lockAccess());
 $('#roleLogoutBtn').addEventListener('click',()=>lockAccess());
 $('#cloudConnectionBtn').addEventListener('click',()=>{$('#cloudError').classList.add('hidden');renderCloudStatus();$('#cloudModal').classList.remove('hidden')});
 $$('.cloud-close').forEach(button=>button.addEventListener('click',()=>$('#cloudModal').classList.add('hidden')));
 $('#cloudModal').addEventListener('click',e=>{if(e.target===$('#cloudModal'))$('#cloudModal').classList.add('hidden')});
-$('#cloudLoginForm').addEventListener('submit',async e=>{e.preventDefault();const error=$('#cloudError'),form=e.currentTarget;error.classList.add('hidden');try{await window.PolatBakimCloud.signIn(form.elements.email.value.trim(),form.elements.password.value);form.reset();await window.PolatBakimCloud.startRealtime(value=>{try{applyCloudState(value)}catch(err){renderCloudStatus({status:'error',message:err.message})}});renderCloudStatus();toast('Supabase yönetici bağlantısı kuruldu.')}catch(err){error.textContent=err.message;error.classList.remove('hidden');renderCloudStatus({status:'error',message:err.message})}});
+$('#cloudLoginForm').addEventListener('submit',async e=>{e.preventDefault();const error=$('#cloudError'),form=e.currentTarget;error.classList.add('hidden');try{const profile=await window.PolatBakimCloud.signIn(form.elements.email.value.trim(),form.elements.password.value);form.reset();if(profile.must_change_password){$('#cloudModal').classList.add('hidden');showFirstPasswordSetup(profile);return}await window.PolatBakimCloud.startRealtime(value=>{try{applyCloudState(value)}catch(err){renderCloudStatus({status:'error',message:err.message})}});renderCloudStatus();toast('Supabase yönetici bağlantısı kuruldu.')}catch(err){error.textContent=err.message;error.classList.remove('hidden');renderCloudStatus({status:'error',message:err.message})}});
 $('#cloudSignOutBtn').addEventListener('click',async()=>{await window.PolatBakimCloud.signOut();renderCloudStatus();toast('Supabase oturumu kapatıldı.')});
 $('#cloudPullBtn').addEventListener('click',async()=>{if(!confirm('Buluttaki kayıtlar bu cihazdaki mevcut verilerin üzerine alınsın mı?'))return;try{const remote=await window.PolatBakimCloud.pullState();if(remote)applyCloudState(remote);else toast('Supabase üzerinde henüz bakım kaydı bulunmuyor.')}catch(err){renderCloudStatus({status:'error',message:err.message});toast('Buluttan kayıt alınamadı.')}});
 $('#cloudPushBtn').addEventListener('click',async()=>{if(!confirm('Bu cihazdaki bakım kayıtları Supabase üzerine gönderilsin mi?'))return;try{await window.PolatBakimCloud.pushState(state);toast('Bakım kayıtları Supabase üzerine gönderildi.')}catch(err){renderCloudStatus({status:'error',message:err.message});toast(err.message.includes('SNAPSHOT_CONFLICT')?'Bulutta daha yeni kayıt var. Önce “Buluttan Al” işlemini yapın.':'Buluta kayıt gönderilemedi.')}});

@@ -233,3 +233,8 @@ body:not(.can-delete-orders) [data-delete-order],body:not(.can-delete-orders) #d
 .asset-status-editor select{min-width:145px;height:32px;padding:4px 8px;border:1px solid #a7ccc0;border-radius:7px;background:#fff;color:#163c34;font:inherit;font-size:10px;font-weight:750}
 .asset-status-editor button{min-height:32px;padding:5px 10px}
 @media(max-width:640px){.asset-card-actions .asset-status-editor{grid-column:1/-1;margin-right:0}.asset-card-actions .asset-status-editor button{width:auto}}
+.first-password-note{margin:0;color:var(--muted);font-size:12px;line-height:1.6}
+.first-password-note strong{color:var(--navy)}
+#firstPasswordForm>label{display:grid;gap:6px;color:var(--navy);font-size:10px;font-weight:800}
+#firstPasswordForm>label input{width:100%;height:45px;border:1px solid var(--line-strong);border-radius:10px;background:#fff;color:var(--text);padding:0 12px}
+#firstPasswordForm .access-back{justify-self:center;margin-top:2px}
