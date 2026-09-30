@@ -53,7 +53,7 @@ const machineMasterData = window.TEZGAH_MASTER_DATA || {version:'',machines:[]};
 const seedData = {...importedSeedData,source:{...(importedSeedData.source||fallbackData.source),rowCount:0,laborEntryCount:0,validDurationCount:0},orders:[],activities:[],orderResetVersion:ORDER_RESET_VERSION,maintenanceResetVersion:MAINTENANCE_RESET_VERSION};
 const analyticsSource = window.BAKIM_ANALYTICS_DATA || {};
 
-if(PRODUCTION_MODE){DEFAULT_APPROVERS.length=0;DEFAULT_MATERIALS.length=0;DEFAULT_ASSET_CATEGORIES.length=0;SCADA_DEFAULT_DEPARTMENTS.length=0;Object.keys(FAILURE_OPTIONS).forEach(key=>{FAILURE_OPTIONS[key]=[]})}
+if(PRODUCTION_MODE){DEFAULT_APPROVERS.length=0;DEFAULT_MATERIALS.length=0;DEFAULT_ASSET_CATEGORIES.length=0;SCADA_DEFAULT_DEPARTMENTS.length=0}
 function emptyProductionState(){return{source:{name:'Supabase',rowCount:0},technicians:[],approvers:[],assets:[],orders:[],materials:[],activities:[],budgetPlans:[],purchaseRecords:[],costImports:[],followUps:[],monthlyCapacity:{},factoryCalendar:{},maintenanceCards:[],assetContracts:[],assetCategories:[],failureOptionAdditions:{},failureOptionRemovals:{},deletedAssetCodes:[],scadaMachines:[],scadaLayouts:{},scadaDepartments:[...SCADA_DEFAULT_DEPARTMENTS],assetStatusResetVersion:ASSET_STATUS_RESET_VERSION,orderResetVersion:ORDER_RESET_VERSION,maintenanceResetVersion:MAINTENANCE_RESET_VERSION,assetPtFilterVersion:ASSET_PT_FILTER_VERSION}}
 
 let orderResetAppliedAtLoad = false;
