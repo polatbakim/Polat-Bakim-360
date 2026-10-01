@@ -249,3 +249,11 @@ body:not(.can-delete-orders) [data-delete-order],body:not(.can-delete-orders) #d
 .planned-maintenance-catalog{margin-top:16px}
 .planned-item-button{display:block;width:100%;border:0;border-bottom:1px solid var(--line);background:transparent;text-align:left;color:inherit;cursor:pointer}
 .planned-item-button:hover{background:#f7fbfb}
+.planned-maintenance-catalog .table-toolbar{flex-wrap:wrap}
+.maintenance-view-toggle{margin-left:auto}
+.maintenance-list-wrap{margin:16px 18px 18px;border:1px solid var(--line);border-radius:10px}
+.maintenance-list-table{min-width:1000px}
+.maintenance-list-table td:nth-child(2),.maintenance-list-table td:nth-child(3){white-space:normal;min-width:170px}
+.maintenance-list-table tbody tr{cursor:pointer}
+.maintenance-list-actions{display:flex;gap:6px;white-space:nowrap}
+@media(max-width:650px){.maintenance-view-toggle{width:100%;margin-left:0}.maintenance-view-toggle button{flex:1}.maintenance-list-wrap{margin:12px}}
