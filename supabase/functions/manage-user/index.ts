@@ -23,15 +23,34 @@ export default {
     if (req.method !== 'POST') return reply('Yalnızca POST kullanılabilir.', 405)
     const callerId = ctx.userClaims?.id
     if (!callerId) return reply('Oturum bulunamadı.', 401)
-    const { data: caller, error: callerError } = await ctx.supabase
-      .from('profiles').select('id,is_admin,manager_access,active').eq('id', callerId).single()
-    if (callerError || !caller?.active || !caller.manager_access || !caller.is_admin) {
-      return reply('Bu işlem için Admin Yönetici yetkisi gerekir.', 403)
-    }
-
-    let body: { action?: string; user?: UserInput; id?: string }
+    let body: { action?: string; user?: UserInput; id?: string; currentPassword?: string; newPassword?: string }
     try { body = await req.json() } catch { return reply('Geçerli bir JSON gönderin.') }
     const admin = ctx.supabaseAdmin
+    const { data: caller, error: callerError } = await ctx.supabase
+      .from('profiles').select('id,email,is_admin,manager_access,active,must_change_password').eq('id', callerId).single()
+    if (callerError || !caller?.active) return reply('Aktif kullanıcı bulunamadı.', 403)
+
+    if (body.action === 'change-own-password') {
+      if (!caller.must_change_password) return reply('İlk giriş şifresi değiştirme işlemi beklenmiyor.', 403)
+      const currentPassword = String(body.currentPassword || '')
+      const newPassword = String(body.newPassword || '')
+      if (newPassword.length < 8) return reply('Yeni şifre en az 8 karakter olmalıdır.')
+      if (!currentPassword || currentPassword === newPassword) return reply('Yeni şifre geçici şifreden farklı olmalıdır.')
+      const { data: verified, error: verifyError } = await ctx.supabase.auth.signInWithPassword({
+        email: caller.email || ctx.userClaims?.email || '', password: currentPassword,
+      })
+      if (verifyError || verified.user?.id !== callerId) return reply('Mevcut şifre hatalı.', 401)
+      const { error: passwordError } = await admin.auth.admin.updateUserById(callerId, { password: newPassword })
+      if (passwordError) return reply(passwordError.message, 400)
+      const { error: profileError } = await admin.from('profiles')
+        .update({ must_change_password: false, updated_at: new Date().toISOString() }).eq('id', callerId)
+      if (profileError) return reply('Şifre değişti ancak hesap işareti güncellenemedi. Yeni şifrenizle tekrar deneyin.', 500)
+      return Response.json({ ok: true })
+    }
+
+    if (!caller.manager_access || !caller.is_admin || caller.must_change_password) {
+      return reply('Bu işlem için Admin Yönetici yetkisi gerekir.', 403)
+    }
     if (body.action === 'disable') {
       const id = String(body.id || '')
       if (!id || id === callerId) return reply('Kendi hesabınızı silemezsiniz.')
@@ -100,7 +119,9 @@ export default {
       specialty: String(user.specialty || '').trim(), phone: String(user.phone || '').trim(),
       hourly_rate: Number(user.hourlyRate || 0),
       visible_pages: user.isAdmin ? [] : (user.visiblePages || []),
-      delete_permissions: user.deletePermissions || {}, updated_at: new Date().toISOString(),
+      delete_permissions: user.deletePermissions || {},
+      must_change_password: !previous || !!user.password ? true : !!previous.must_change_password,
+      updated_at: new Date().toISOString(),
     }
     const { error: profileError } = await admin.from('profiles').upsert(profile)
     if (profileError) {
