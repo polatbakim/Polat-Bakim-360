@@ -23,18 +23,23 @@ alter table public.profiles add column if not exists phone text not null default
 alter table public.profiles add column if not exists hourly_rate numeric not null default 0;
 alter table public.profiles add column if not exists visible_pages jsonb not null default '[]'::jsonb;
 alter table public.profiles add column if not exists delete_permissions jsonb not null default '{}'::jsonb;
+alter table public.profiles add column if not exists must_change_password boolean not null default false;
+
+create or replace function public.can_use_app()
+returns boolean language sql stable security definer set search_path=public
+as $$ select exists(select 1 from public.profiles where id=(select auth.uid()) and active and not must_change_password) $$;
 
 create or replace function public.is_admin_manager()
 returns boolean language sql stable security definer set search_path=public
-as $$ select exists(select 1 from public.profiles where id=(select auth.uid()) and manager_access and is_admin and active) $$;
+as $$ select exists(select 1 from public.profiles where id=(select auth.uid()) and manager_access and is_admin and active and not must_change_password) $$;
 
 create or replace function public.is_manager()
 returns boolean language sql stable security definer set search_path=public
-as $$ select exists(select 1 from public.profiles where id=(select auth.uid()) and manager_access and active) $$;
+as $$ select exists(select 1 from public.profiles where id=(select auth.uid()) and manager_access and active and not must_change_password) $$;
 
 create or replace function public.current_technician_id()
 returns text language sql stable security definer set search_path=public
-as $$ select technician_id from public.profiles where id=(select auth.uid()) and operator_access and active $$;
+as $$ select technician_id from public.profiles where id=(select auth.uid()) and operator_access and active and not must_change_password $$;
 
 create or replace function public.create_profile_for_new_user()
 returns trigger language plpgsql security definer set search_path=public
@@ -375,12 +380,12 @@ drop policy if exists sync_events_manager_write on public.app_sync_events;
 create policy sync_events_manager_write on public.app_sync_events for all to authenticated using (public.is_manager()) with check (public.is_manager());
 
 drop policy if exists technicians_read on public.technicians;
-create policy technicians_read on public.technicians for select to authenticated using (active or public.is_manager());
+create policy technicians_read on public.technicians for select to authenticated using (public.can_use_app() and (active or public.is_manager()));
 drop policy if exists technicians_manager_write on public.technicians;
 create policy technicians_manager_write on public.technicians for all to authenticated using (public.is_manager()) with check (public.is_manager());
 
 drop policy if exists assets_read on public.assets;
-create policy assets_read on public.assets for select to authenticated using (true);
+create policy assets_read on public.assets for select to authenticated using (public.can_use_app());
 drop policy if exists assets_manager_write on public.assets;
 create policy assets_manager_write on public.assets for all to authenticated using (public.is_manager()) with check (public.is_manager());
 
@@ -397,7 +402,7 @@ drop policy if exists work_order_material_costs_manager_only on public.work_orde
 create policy work_order_material_costs_manager_only on public.work_order_material_costs for all to authenticated using (public.is_manager()) with check (public.is_manager());
 
 drop policy if exists materials_read on public.materials;
-create policy materials_read on public.materials for select to authenticated using (active or public.is_manager());
+create policy materials_read on public.materials for select to authenticated using (public.can_use_app() and (active or public.is_manager()));
 drop policy if exists materials_manager_write on public.materials;
 create policy materials_manager_write on public.materials for all to authenticated using (public.is_manager()) with check (public.is_manager());
 
@@ -409,7 +414,7 @@ create policy work_order_materials_insert on public.work_order_materials for ins
 drop policy if exists activities_read on public.activities;
 create policy activities_read on public.activities for select to authenticated using (public.is_manager() or exists(select 1 from public.work_orders w where w.id=work_order_id and w.technician_id=public.current_technician_id()));
 drop policy if exists activities_insert on public.activities;
-create policy activities_insert on public.activities for insert to authenticated with check (actor_id=(select auth.uid()));
+create policy activities_insert on public.activities for insert to authenticated with check (public.can_use_app() and actor_id=(select auth.uid()));
 
 drop policy if exists work_order_events_read on public.work_order_events;
 create policy work_order_events_read on public.work_order_events for select to authenticated using (public.is_manager() or exists(select 1 from public.work_orders w where w.id=work_order_id and w.technician_id=public.current_technician_id()));
@@ -417,7 +422,7 @@ drop policy if exists work_order_events_insert on public.work_order_events;
 create policy work_order_events_insert on public.work_order_events for insert to authenticated with check (public.is_manager() or (actor_id=(select auth.uid()) and exists(select 1 from public.work_orders w where w.id=work_order_id and w.technician_id=public.current_technician_id())));
 
 drop policy if exists failure_code_catalog_read on public.failure_code_catalog;
-create policy failure_code_catalog_read on public.failure_code_catalog for select to authenticated using (active or public.is_manager());
+create policy failure_code_catalog_read on public.failure_code_catalog for select to authenticated using (public.can_use_app() and (active or public.is_manager()));
 drop policy if exists failure_code_catalog_manager_write on public.failure_code_catalog;
 create policy failure_code_catalog_manager_write on public.failure_code_catalog for all to authenticated using (public.is_manager()) with check (public.is_manager());
 
