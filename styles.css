@@ -246,3 +246,6 @@ body:not(.can-delete-orders) [data-delete-order],body:not(.can-delete-orders) #d
 .machine-import-summary>div{display:grid;gap:4px;padding:14px;border:1px solid var(--line-strong);border-radius:10px;background:#f7fafb}
 .machine-import-summary strong{font-size:20px;color:var(--teal-dark)}
 .machine-import-summary span{font-size:10px;color:var(--muted);font-weight:750}
+.planned-maintenance-catalog{margin-top:16px}
+.planned-item-button{display:block;width:100%;border:0;border-bottom:1px solid var(--line);background:transparent;text-align:left;color:inherit;cursor:pointer}
+.planned-item-button:hover{background:#f7fbfb}
