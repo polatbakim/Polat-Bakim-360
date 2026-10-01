@@ -1,6 +1,9 @@
 .completion-time-button{display:block;width:100%;min-height:36px;padding:9px 11px;border:1px solid var(--line-strong);border-radius:7px;background:#fff;color:var(--text);font:inherit;text-align:left;cursor:pointer}
 .completion-time-button:hover,.completion-time-button:focus-visible{border-color:var(--teal);outline:2px solid transparent;box-shadow:0 0 0 2px rgba(0,165,145,.13)}
 .completion-time-button:disabled{cursor:not-allowed}
+.completion-time-button:disabled{background:#f3f7f9;color:#34485b;opacity:1}
+.downtime-choice{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin:0 0 16px;padding:12px 14px;border:1px solid var(--line-strong);border-radius:9px;background:#f7fafb}
+.downtime-choice strong{margin-right:8px;font-size:11px}.downtime-choice strong span{color:#c03545}.downtime-choice label{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700}.downtime-choice input{accent-color:var(--teal)}
 #completionTimeModal{z-index:130}
 #completionTimeForm{width:min(460px,100%)}
 .completion-time-grid{display:grid;grid-template-columns:1fr 90px 90px;gap:10px}
