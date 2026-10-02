@@ -10,3 +10,22 @@
 .completion-time-grid label{display:grid;gap:5px;min-width:0;font-size:9px;font-weight:700}
 .completion-time-grid input,.completion-time-grid select{width:100%;min-height:38px;border:1px solid var(--line-strong);border-radius:7px;padding:8px;background:#fff;color:var(--text);font:inherit;font-size:11px}
 @media(max-width:460px){.completion-time-grid{grid-template-columns:1fr 1fr}.completion-time-grid label:first-child{grid-column:1/-1}}
+
+#operatorCorrectionForm{width:min(570px,100%)}
+#operatorCorrectionForm .modal-head{align-items:flex-start;gap:12px}
+#operatorCorrectionForm .modal-head>div{min-width:0}
+#operatorCorrectionForm .modal-head .icon-btn{flex:0 0 30px;min-height:30px}
+#operatorCorrectionOrder{overflow-wrap:anywhere}
+#operatorCorrectionForm .form-section{padding:20px 22px 22px}
+#operatorCorrectionForm .form-section label{display:grid;gap:8px;min-width:0;font-size:12px;font-weight:700}
+#operatorCorrectionForm textarea{display:block;width:100%;min-width:0;max-width:100%;min-height:140px;padding:11px 12px;border:1px solid var(--line-strong);border-radius:8px;background:#fff;color:var(--text);font:inherit;font-size:14px;line-height:1.5;resize:vertical;outline:none}
+#operatorCorrectionForm textarea:focus{border-color:var(--teal);box-shadow:0 0 0 3px var(--teal-soft)}
+@media(max-width:520px){
+  #operatorCorrectionModal{padding:12px}
+  #operatorCorrectionForm{max-height:calc(100dvh - 24px);border-radius:14px}
+  #operatorCorrectionForm .modal-head{padding:18px 18px 16px}
+  #operatorCorrectionForm .form-section{padding:18px}
+  #operatorCorrectionForm .modal-actions{display:grid;grid-template-columns:1fr 1fr;padding:14px 18px 18px}
+  #operatorCorrectionForm .modal-actions button{min-width:0;width:100%;min-height:42px;padding-inline:8px}
+  #operatorCorrectionForm textarea{font-size:16px}
+}
