@@ -257,3 +257,15 @@ body:not(.can-delete-orders) [data-delete-order],body:not(.can-delete-orders) #d
 .maintenance-list-table tbody tr{cursor:pointer}
 .maintenance-list-actions{display:flex;gap:6px;white-space:nowrap}
 @media(max-width:650px){.maintenance-view-toggle{width:100%;margin-left:0}.maintenance-view-toggle button{flex:1}.maintenance-list-wrap{margin:12px}}
+
+.manager-order-time-heading{display:grid;gap:4px;padding-top:12px;border-top:1px solid var(--line)}
+.manager-order-time-heading strong{font-size:12px;color:var(--navy)}
+.manager-order-time-heading small{font-size:10px;color:var(--muted)}
+.manager-order-pause-editor{display:grid;gap:10px;min-width:0}
+.manager-order-pause-editor>[data-manager-order-pause-list]{display:grid;gap:10px}
+.manager-order-pause-editor>[data-add-order-pause]{justify-self:start}
+.manager-order-pause-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:13px;border:1px solid var(--line);border-radius:9px;background:#f7fafb}
+.manager-order-pause-row>strong,.manager-order-pause-row>.full{grid-column:1/-1}
+.manager-order-pause-row>strong{color:var(--navy);font-size:11px}
+.manager-order-pause-row>button{grid-column:1/-1;justify-self:end}
+@media(max-width:650px){.manager-order-pause-row{grid-template-columns:1fr}.manager-order-pause-row>button{justify-self:stretch}.manager-order-pause-editor>[data-add-order-pause]{width:100%}}
