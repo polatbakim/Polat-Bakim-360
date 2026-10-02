@@ -258,7 +258,7 @@
           </form>
         </div>
         <div class="manager-workspace hidden" id="managerWorkspace">
-          <div class="manager-approval-hero"><div><span>YÖNETİCİ ONAY MERKEZİ</span><h2>Maliyet ve Son Teyitler</h2><p>Operatörlerden gelen işleri fiyatlandırın, onaylayıp kapatın veya düzeltme için geri gönderin.</p></div><div class="manager-session"><span class="avatar" id="managerSessionAvatar">—</span><div><small>YETKİLİ YÖNETİCİ</small><strong id="managerSessionName">Yönetici</strong></div><button type="button" id="managerPasswordBtn">Şifre Değiştir</button><button type="button" id="managerLogoutBtn">Çıkış</button></div></div>
+          <div class="manager-approval-hero"><div><span>YÖNETİCİ ONAY MERKEZİ</span><h2>Onaylar ve Düzeltme İstekleri</h2><p>Operatörlerin düzeltme isteklerini görün; tamamlanan işleri fiyatlandırıp onaylayın veya geri gönderin.</p></div><div class="manager-session"><span class="avatar" id="managerSessionAvatar">—</span><div><small>YETKİLİ YÖNETİCİ</small><strong id="managerSessionName">Yönetici</strong></div><button type="button" id="managerPasswordBtn">Şifre Değiştir</button><button type="button" id="managerLogoutBtn">Çıkış</button></div></div>
           <div class="manager-approval-stats" id="managerApprovalStats"></div>
           <section class="panel manager-queue-panel"><div class="panel-head"><div><h2>Operatör Düzeltme İstekleri</h2><p>Operatörlerin yöneticiden istediği düzenlemeler</p></div><span class="source-pill" id="operatorCorrectionCount">0 kayıt</span></div><div class="manager-approval-list" id="operatorCorrectionList"></div></section>
           <section class="panel manager-queue-panel"><div class="panel-head"><div><h2>Onay Bekleyen Son Teyitler</h2><p>Operatör tarafından tamamlanarak maliyet onayına gönderilen işler</p></div><span class="source-pill" id="managerPendingLabel">0 kayıt</span></div><div class="manager-approval-list" id="managerApprovalList"></div><div class="empty-state hidden" id="managerApprovalEmpty"><span>✓</span><h3>Onay bekleyen iş yok</h3><p>Operatör teyitleri geldiğinde bu bölümde görüntülenecek.</p></div></section>
@@ -436,7 +436,7 @@
     <form class="modal small-modal" id="operatorCorrectionForm">
       <div class="modal-head"><div><span class="modal-eyebrow">OPERATÖR GERİ BİLDİRİMİ</span><h2 id="operatorCorrectionTitle">Yöneticiden Düzeltme İste</h2><p id="operatorCorrectionOrder"></p></div><button type="button" class="icon-btn operator-correction-close" aria-label="Kapat">×</button></div>
       <input type="hidden" name="orderId">
-      <div class="form-section"><label class="full">Düzeltme konusu<textarea name="correctionNote" rows="5" maxlength="2000" required placeholder="Yöneticinin düzeltmesini istediğiniz bilgiyi yazın."></textarea></label></div>
+      <div class="form-section"><label class="full">Düzeltme konusu<textarea name="correctionNote" rows="5" maxlength="2000" required placeholder="Yöneticinin düzeltmesini istediğiniz bilgiyi yazın."></textarea></label><p class="access-error hidden" id="operatorCorrectionError" role="alert"></p></div>
       <div class="modal-actions"><button type="button" class="secondary-btn operator-correction-close">Vazgeç</button><button type="submit" class="primary-btn">Düzeltme İste</button></div>
     </form>
   </div>
@@ -642,7 +642,7 @@
   <script src="supabase-cloud.js?v=20260930-machine-import-v1"></script>
   <script src="vendor/qrcode.min.js"></script>
   <script src="vendor/xlsx.full.min.js"></script>
-  <script src="app.js?v=20261001-operator-corrections"></script>
+  <script src="app.js?v=20261002-correction-delivery"></script>
   <script src="machine-import.js?v=20260930-machine-import-v1"></script>
 </body>
 </html>

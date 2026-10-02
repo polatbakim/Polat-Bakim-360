@@ -651,17 +651,18 @@ function updateCounts(){
   $('#navOpenCount').textContent = open; $('#navRequestCount').textContent = requests;
   const operatorOpen = operatorTechId ? state.orders.filter(o => isWorkOrder(o)&&isActive(o)&&operatorCanSeeOrder(o,operatorTechId)).length : 0;
   $('#navOperatorCount').textContent = operatorOpen;
-  if($('#navManagerCount'))$('#navManagerCount').textContent=state.orders.filter(o=>o.status==='Teyit Bekliyor').length;
+  if($('#navManagerCount'))$('#navManagerCount').textContent=state.orders.filter(o=>o.status==='Teyit Bekliyor'||o.operatorCorrectionPending).length;
   if($('#navScadaCount'))$('#navScadaCount').textContent=(state.scadaMachines||[]).filter(machine=>scadaEffectiveStatus(machine)==='stopped').length;
   const dueLimit=dateOffset(7),maintenanceCount=state.assets.filter(a=>{const next=assetNextMaintenance(a);return next&&next<=dueLimit}).length;if($('#navMaintenanceCount'))$('#navMaintenanceCount').textContent=maintenanceCount;
   $('#sidebarSource').textContent = state.source?.name || 'Yerel kayıtlar';
 }
 function notificationItems(){
   if(accessRole!=='manager')return[];
+  const corrections=state.orders.filter(order=>order.operatorCorrectionPending).map(order=>({kind:'Operatör Düzeltme İsteği',title:order.title,detail:`${visibleWorkOrderNo(order)||order.id} · ${order.operatorCorrectionRequestedBy||'Operatör'} düzeltme istiyor`,view:'manager',id:order.id}));
   const requests=state.orders.filter(isPendingRequest).map(order=>({kind:'İş Talebi',title:order.title,detail:`${order.id} · ${assetById(order.assetId).name}`,view:'requests',id:order.id}));
   const approvals=state.orders.filter(order=>order.status==='Teyit Bekliyor').map(order=>({kind:'Yönetici Onayı',title:order.title,detail:`${visibleWorkOrderNo(order)||order.id} · Maliyet onayı bekliyor`,view:'manager',id:order.id}));
   const overdue=state.orders.filter(order=>isWorkOrder(order)&&isActive(order)&&order.status!=='Teyit Bekliyor'&&order.dueDate&&order.dueDate<today()).map(order=>({kind:'Geciken İş',title:order.title,detail:`${visibleWorkOrderNo(order)||order.id} · ${formatDate(order.dueDate)}`,view:'orders',id:order.id}));
-  return[...approvals,...requests,...overdue].filter(item=>canViewPage(item.view))
+  return[...corrections,...approvals,...requests,...overdue].filter(item=>canViewPage(item.view))
 }
 function closeNotifications(){const panel=$('#notificationPanel'),button=$('#notificationBtn');panel?.classList.add('hidden');button?.setAttribute('aria-expanded','false')}
 function renderNotifications(){
@@ -847,9 +848,9 @@ function renderManager(){
   select.innerHTML='<option value="">Yönetici seçin</option>'+users.map(x=>`<option value="${x.id}">${escapeHtml(x.name)}</option>`).join('');
   const activeUser=users.find(x=>x.id===currentApproverId);if(!activeUser){currentApproverId='';sessionStorage.removeItem(MANAGER_SESSION_KEY)}
   $('#managerLoginShell').classList.toggle('hidden',!!activeUser);$('#managerWorkspace').classList.toggle('hidden',!activeUser);
-  const pending=state.orders.filter(o=>o.status==='Teyit Bekliyor').sort((a,b)=>String(b.confirmationRequestedAt||b.updatedAt||'').localeCompare(String(a.confirmationRequestedAt||a.updatedAt||'')));
-  $('#navManagerCount').textContent=pending.length;if(!activeUser)return;
   const operatorRequests=state.orders.filter(o=>o.operatorCorrectionPending).sort((a,b)=>String(b.operatorCorrectionRequestedAt||'').localeCompare(String(a.operatorCorrectionRequestedAt||'')));
+  const pending=state.orders.filter(o=>o.status==='Teyit Bekliyor').sort((a,b)=>String(b.confirmationRequestedAt||b.updatedAt||'').localeCompare(String(a.confirmationRequestedAt||a.updatedAt||'')));
+  $('#navManagerCount').textContent=state.orders.filter(o=>o.status==='Teyit Bekliyor'||o.operatorCorrectionPending).length;if(!activeUser)return;
   $('#operatorCorrectionCount').textContent=`${operatorRequests.length} kayıt`;
   $('#operatorCorrectionList').innerHTML=operatorRequests.map(o=>`<article class="manager-approval-card"><div class="manager-approval-head"><div><span class="job-id">${escapeHtml(visibleWorkOrderNo(o))}</span><h3>${escapeHtml(o.title)}</h3></div><span class="badge">${escapeHtml(o.status)}</span></div><p class="manager-work-result"><strong>${escapeHtml(o.operatorCorrectionRequestedBy||'Operatör')}:</strong> ${escapeHtml(o.operatorCorrectionNote||'')}</p><div class="manager-approval-actions"><button type="button" class="secondary-btn" data-order="${o.id}">İş Emrini Aç</button><button type="button" class="primary-btn" data-operator-correction-resolve="${o.id}">Çözüldü Olarak İşaretle</button></div></article>`).join('')||'<p class="subtext">Bekleyen düzeltme isteği yok.</p>';
   $('#managerSessionAvatar').textContent=activeUser.initials;$('#managerSessionName').textContent=activeUser.name;
@@ -1643,7 +1644,7 @@ function openCorrectionRequest(id){
 function closeCorrectionRequest(){$('#correctionRequestModal').classList.add('hidden');$('#correctionRequestForm').reset()}
 function openOperatorCorrectionRequest(id){
   const order=state.orders.find(item=>item.id===id);if(!order||!operatorCanSeeOrder(order,operatorTechId))return;
-  const form=$('#operatorCorrectionForm');form.reset();form.elements.orderId.value=id;$('#operatorCorrectionOrder').textContent=`${visibleWorkOrderNo(order)} · ${order.title} için yöneticinin düzeltmesi gereken konuyu yazın.`;$('#operatorCorrectionModal').classList.remove('hidden');form.elements.correctionNote.focus()
+  const form=$('#operatorCorrectionForm');form.reset();form.elements.orderId.value=id;$('#operatorCorrectionOrder').textContent=`${visibleWorkOrderNo(order)} · ${order.title} için yöneticinin düzeltmesi gereken konuyu yazın.`;$('#operatorCorrectionError').classList.add('hidden');$('#operatorCorrectionModal').classList.remove('hidden');form.elements.correctionNote.focus()
 }
 function closeOperatorCorrectionRequest(){$('#operatorCorrectionModal').classList.add('hidden');$('#operatorCorrectionForm').reset()}
 function localDateKey(value){const date=value instanceof Date?value:new Date(value);if(Number.isNaN(date.getTime()))return'';const pad=n=>String(n).padStart(2,'0');return`${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}`}
@@ -1970,9 +1971,22 @@ $('#correctionRequestForm').addEventListener('submit',event=>{
 });
 $('#correctionRequestForm').elements.correctionNote.addEventListener('input',event=>event.target.setCustomValidity(''));
 $$('.operator-correction-close').forEach(button=>button.addEventListener('click',closeOperatorCorrectionRequest));
-$('#operatorCorrectionForm').addEventListener('submit',event=>{
+$('#operatorCorrectionForm').addEventListener('submit',async event=>{
   event.preventDefault();const form=event.currentTarget,order=state.orders.find(o=>o.id===form.elements.orderId.value),note=form.elements.correctionNote.value.trim();if(!order||!operatorCanSeeOrder(order,operatorTechId)||!note)return;
-  const now=new Date().toISOString().slice(0,19),operator=techById(operatorTechId);order.operatorCorrectionPending=true;order.operatorCorrectionNote=note;order.operatorCorrectionRequestedBy=operator.name;order.operatorCorrectionRequestedAt=now;order.updatedAt=now;appendOrderEvent(order,'operator-correction-requested','Operatör yöneticiden düzeltme istedi',{detail:note,timestamp:now});addActivity(`${visibleWorkOrderNo(order)} için ${operator.name} yöneticiden düzeltme istedi.`);saveState();closeOperatorCorrectionRequest();toast('Düzeltme isteği yönetici ekranına gönderildi.')
+  const errorBox=$('#operatorCorrectionError'),button=form.querySelector('button[type="submit"]'),now=new Date().toISOString(),operator=techById(operatorTechId),nextOrder={...order,events:[...(order.events||[])]};
+  errorBox.classList.add('hidden');nextOrder.operatorCorrectionPending=true;nextOrder.operatorCorrectionNote=note;nextOrder.operatorCorrectionRequestedBy=operator.name;nextOrder.operatorCorrectionRequestedAt=now;nextOrder.updatedAt=now;
+  appendOrderEvent(nextOrder,'operator-correction-requested','Operatör yöneticiden düzeltme istedi',{detail:note,timestamp:now});button.disabled=true;
+  try{
+    if(PRODUCTION_MODE){
+      const cloud=window.PolatBakimCloud;if(!cloud?.getInfo?.().connected)throw new Error('Supabase bağlantısı yok. İstek kaydedilmedi.');
+      await cloud.pushOperatorOrder(nextOrder);
+      const remote=await cloud.pullOperatorState(),saved=remote?.orders?.find(item=>item.id===order.id);
+      if(!saved||saved.operatorCorrectionRequestedAt!==now||saved.operatorCorrectionNote!==note)throw new Error('Supabase düzeltme isteğini kaydetmedi. operator-corrections.sql sorgusunu kontrol edin.');
+      applyCloudState(remote);
+    }else{const index=state.orders.findIndex(item=>item.id===order.id);state.orders[index]=nextOrder;saveState()}
+    addActivity(`${visibleWorkOrderNo(nextOrder)} için ${operator.name} yöneticiden düzeltme istedi.`);closeOperatorCorrectionRequest();toast('Düzeltme isteği yönetici ekranına kaydedildi.')
+  }catch(error){errorBox.textContent=error.message;errorBox.classList.remove('hidden');renderCloudStatus({status:'error',message:error.message})}
+  finally{button.disabled=false}
 });
 $$('.hold-reason-close').forEach(button=>button.addEventListener('click',closeHoldReasonModal));
 $('#holdReasonModal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeHoldReasonModal()});

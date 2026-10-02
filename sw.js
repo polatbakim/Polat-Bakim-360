@@ -1,4 +1,4 @@
-const CACHE_NAME='polat-bakim-360-v20261002-mobile-correction';
+const CACHE_NAME='polat-bakim-360-v20261002-correction-delivery';
 const APP_SHELL=['./','./index.html','./operator.html','./styles.css','./fault-catalog.css','./completion-time.css','./avatar-alignment.css','./app.js','./machine-import.js','./supabase-config.js','./supabase-cloud.js','./vendor/xlsx.full.min.js','./vendor/qrcode.min.js','./manifest.webmanifest','./icons/polat-bakim.svg'];
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(APP_SHELL)).then(()=>self.skipWaiting()))});
 self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==CACHE_NAME).map(key=>caches.delete(key)))).then(()=>self.clients.claim()))});
