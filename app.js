@@ -454,7 +454,20 @@ function checkNewOperatorAssignments(){
 if(accessRole!=='operator'||!operatorTechId)return;const key=operatorAssignmentStorageKey(operatorTechId),assigned=state.orders.filter(order=>isActive(order)&&operatorCanSeeOrder(order,operatorTechId)),currentIds=assigned.map(order=>order.id),storage=PRODUCTION_MODE?sessionStorage:localStorage;let previous=null;try{const raw=storage.getItem(key);previous=raw===null?null:JSON.parse(raw)}catch{previous=null}const known=new Set(Array.isArray(previous)?previous:[]);try{storage.setItem(key,JSON.stringify(currentIds))}catch{}if(previous===null)return;assigned.filter(order=>!known.has(order.id)).forEach(order=>showAssignmentNotification(order));
 }
 async function enableOperatorNotifications(){
-  if(!operatorTechId||accessRole!=='operator')return;if(!('Notification' in window)){toast('Bu tarayıcı sistem bildirimlerini desteklemiyor. Program içi bildirimler çalışmaya devam eder.');return}if(!/^https?:$/.test(location.protocol)){toast('Telefon bildirimleri GitHub HTTPS adresinde etkinleşir. Program içi uyarılar açıktır.');return}try{const permission=await Notification.requestPermission();updateOperatorNotificationButton();if(permission==='granted'){toast('Yeni atanan iş bildirimleri açıldı.');new Notification('Polat Bakım 360',{body:'Bildirimler başarıyla etkinleştirildi.',icon:'./icons/polat-bakim.svg',tag:'notification-enabled'})}else toast('Bildirim izni verilmedi. Telefonun site ayarlarından daha sonra açabilirsiniz.')}catch{toast('Bildirim izni alınamadı.')}
+  if(!operatorTechId||accessRole!=='operator')return;
+  if(!('Notification' in window)||!('serviceWorker' in navigator)){toast('Bu tarayıcı telefon bildirimlerini desteklemiyor. Program içi uyarılar çalışmaya devam eder.');return}
+  if(location.protocol!=='https:'){toast('Telefon bildirimleri yalnızca GitHub HTTPS adresinde etkinleşir.');return}
+  let permission;
+  try{permission=Notification.permission==='granted'?'granted':await Notification.requestPermission()}
+  catch(error){console.warn('Bildirim izni istenemedi.',error);toast('Bildirim izni istenemedi. Telefonun uygulama izinlerini kontrol edin.');return}
+  updateOperatorNotificationButton();
+  if(permission!=='granted'){toast(permission==='denied'?'Bildirim izni engellendi. Telefonun uygulama ayarlarından açabilirsiniz.':'Bildirim izni verilmedi.');return}
+  try{
+    await navigator.serviceWorker.register('./sw.js');
+    const registration=await navigator.serviceWorker.ready;
+    await registration.showNotification('Polat Bakım 360',{body:'Test bildirimi başarıyla gösterildi. Uygulama açıkken yeni iş atamaları bildirilecektir.',icon:'./icons/polat-bakim.svg',tag:'notification-enabled'});
+    toast('Bildirim izni açık; test bildirimi gönderildi.');
+  }catch(error){console.warn('Test bildirimi gösterilemedi.',error);toast('İzin verildi ancak test bildirimi gösterilemedi. Uygulamayı yenileyip tekrar deneyin.')}
 }
 
 function validCloudState(value){return Boolean(value&&Array.isArray(value.orders)&&Array.isArray(value.assets)&&Array.isArray(value.technicians))}
