@@ -141,6 +141,15 @@
     if(client&&profile)await client.from('push_subscriptions').delete().eq('endpoint',subscription.endpoint);
     await subscription.unsubscribe();pushEnabled=false
   }
+  async function listOwnPushEvents(){
+    await init();
+    if(!client||!profile?.active||!profile.operator_access)throw new Error('Operatör girişi gerekir.');
+    const {data,error}=await client.from('push_events')
+      .select('id,kind,title,body,target_url,status,created_at')
+      .eq('recipient_id',profile.id).order('created_at',{ascending:false}).limit(40);
+    if(error)throw new Error('Bildirimler okunamadı: '+error.message);
+    return data||[]
+  }
   async function signOut(){
     try{await disableWebPush()}catch(error){console.warn('Telefon bildirimi aboneliği kaldırılamadı.',error)}
     if(client)await client.auth.signOut();profile=null;syncReady=false;pushEnabled=false;stopRealtime();emit('signed-out')
@@ -184,5 +193,5 @@
   function onStatus(fn){listeners.add(fn);return()=>listeners.delete(fn)}
   function getInfo(){return{configured,connected:Boolean(client&&profile),profile,version,syncReady,pendingSave:Boolean(saveTimer)||activeSaves>0,pushConfigured:Boolean(config.pushVapidPublicKey),pushEnabled}}
 
-  window.PolatBakimCloud={configured,init,signIn,signInOperator,signInOperatorEmail,listProfiles,manageUser,changeOwnPassword,uploadLayout,downloadLayout,deleteLayout,enableWebPush,disableWebPush,signOut,pullState,pullOperatorState,pushState,pushOperatorOrder,queueState,startRealtime,onStatus,getInfo};
+  window.PolatBakimCloud={configured,init,signIn,signInOperator,signInOperatorEmail,listProfiles,manageUser,changeOwnPassword,uploadLayout,downloadLayout,deleteLayout,enableWebPush,disableWebPush,listOwnPushEvents,signOut,pullState,pullOperatorState,pushState,pushOperatorOrder,queueState,startRealtime,onStatus,getInfo};
 })();

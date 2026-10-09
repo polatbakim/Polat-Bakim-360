@@ -8,7 +8,7 @@
   <meta name="theme-color" content="#0b8174">
   <link rel="icon" type="image/svg+xml" href="icons/polat-bakim.svg?v=20261001">
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="stylesheet" href="styles.css?v=20261007-web-push">
+  <link rel="stylesheet" href="styles.css?v=20261009-operator-inbox">
   <link rel="stylesheet" href="fault-catalog.css?v=20260929-time-save">
   <link rel="stylesheet" href="completion-time.css?v=20261002-mobile-correction">
   <link rel="stylesheet" href="avatar-alignment.css?v=20260929-avatar-center">
@@ -204,7 +204,7 @@
         <div class="operator-workspace hidden" id="operatorWorkspace">
           <div class="operator-hero">
             <div><span class="operator-kicker">SAHA UYGULAMASI</span><h2>Operatör İş Emirleri</h2><p>Size atanan işleri görün, başlatın ve tamamladığınız işi yönetici teyidine gönderin.</p></div>
-            <div class="operator-session"><span class="avatar" id="operatorSessionAvatar">—</span><div><small>OTURUM AÇIK</small><strong id="operatorSessionName">Operatör</strong><span id="operatorSessionRole"></span></div><button type="button" class="operator-notification-btn" id="operatorNotificationBtn">🔔 Bildirimleri Aç</button><button type="button" id="operatorLogoutBtn">Çıkış</button></div>
+            <div class="operator-session"><span class="avatar" id="operatorSessionAvatar">—</span><div><small>OTURUM AÇIK</small><strong id="operatorSessionName">Operatör</strong><span id="operatorSessionRole"></span></div><button type="button" class="operator-inbox-btn" id="operatorInboxBtn" aria-haspopup="dialog">🔔 Bildirimler</button><button type="button" class="operator-notification-btn" id="operatorNotificationBtn">🔔 Bildirimleri Aç</button><button type="button" id="operatorLogoutBtn">Çıkış</button></div>
           </div>
           <div class="operator-stats" id="operatorStats"></div>
           <div class="operator-toolbar"><div class="operator-tabs" id="operatorTabs"><button class="active" data-operator-status="">Tümü</button><button data-operator-status="Atandı">Yeni Atanan</button><button data-operator-status="Devam Ediyor">Devam Eden</button><button data-operator-status="Beklemede">Beklemede</button><button data-operator-status="Teyit Bekliyor">Teyit Bekleyen</button><button data-operator-status="Tamamlandı">Tamamlanan</button></div><label class="search-box operator-search"><span>⌕</span><input id="operatorSearch" type="search" placeholder="İş emri veya ekipman ara"></label></div>
@@ -442,6 +442,14 @@
     </form>
   </div>
 
+  <div class="modal-backdrop hidden" id="operatorInboxModal" role="dialog" aria-modal="true" aria-labelledby="operatorInboxTitle">
+    <div class="modal small-modal operator-inbox-modal">
+      <div class="modal-head"><div><span class="modal-eyebrow">OPERATÖR BİLDİRİMLERİ</span><h2 id="operatorInboxTitle">Bildirimlerim</h2><p>Hesabınıza gönderilen son bildirimler.</p></div><button type="button" class="icon-btn operator-inbox-close" aria-label="Kapat">×</button></div>
+      <div class="operator-inbox-list" id="operatorInboxList" aria-live="polite"></div>
+      <div class="modal-actions"><button type="button" class="secondary-btn" id="operatorInboxRefreshBtn">Yenile</button><button type="button" class="primary-btn operator-inbox-close">Kapat</button></div>
+    </div>
+  </div>
+
   <div class="modal-backdrop hidden" id="accessAccountModal" role="dialog" aria-modal="true" aria-labelledby="accessAccountModalTitle">
     <form class="modal small-modal" id="accessAccountForm">
       <div class="modal-head"><div><span class="modal-eyebrow">GİRİŞ YETKİLERİ</span><h2 id="accessAccountModalTitle">Kullanıcı Ekle</h2><p>Supabase hesabını, giriş türlerini ve yetkilerini belirleyin.</p></div><button type="button" class="icon-btn access-account-close" aria-label="Kapat">×</button></div>
@@ -640,10 +648,10 @@
 
   <div class="toast hidden" id="toast"><span>✓</span><p></p></div>
   <script src="supabase-config.js"></script>
-  <script src="supabase-cloud.js?v=20261009-push-key-check"></script>
+  <script src="supabase-cloud.js?v=20261009-operator-inbox"></script>
   <script src="vendor/qrcode.min.js"></script>
   <script src="vendor/xlsx.full.min.js"></script>
-  <script src="app.js?v=20261007-web-push"></script>
+  <script src="app.js?v=20261009-operator-inbox"></script>
   <script src="machine-import.js?v=20260930-machine-import-v1"></script>
 </body>
 </html>

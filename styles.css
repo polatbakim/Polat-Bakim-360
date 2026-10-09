@@ -276,3 +276,18 @@ body:not(.can-delete-orders) [data-delete-order],body:not(.can-delete-orders) #d
 .manager-order-pause-row>strong{color:var(--navy);font-size:11px}
 .manager-order-pause-row>button{grid-column:1/-1;justify-self:end}
 @media(max-width:650px){.manager-order-pause-row{grid-template-columns:1fr}.manager-order-pause-row>button{justify-self:stretch}.manager-order-pause-editor>[data-add-order-pause]{width:100%}}
+
+/* Operatör bildirim geçmişi */
+.operator-session{flex-wrap:wrap}
+.operator-session>.operator-inbox-btn{order:3;flex:1 1 120px;min-height:38px;border-color:#85d9cb;background:rgba(255,255,255,.18)}
+.operator-session>.operator-notification-btn{order:4;flex:2 1 190px;width:auto;min-height:38px}
+.operator-inbox-modal{overflow:hidden;display:flex;flex-direction:column}
+.operator-inbox-list{display:grid;align-content:start;gap:10px;min-height:110px;max-height:min(60vh,520px);overflow-y:auto;padding:16px 22px}
+.operator-inbox-message{margin:0;padding:22px 12px;text-align:center;color:var(--muted);font-size:11px;line-height:1.5}
+.operator-inbox-item{border:1px solid var(--line);border-radius:10px;padding:13px;background:#f8fbfc}
+.operator-inbox-item-head,.operator-inbox-item-foot{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.operator-inbox-item-head strong{color:var(--navy);font-size:11px}
+.operator-inbox-item-head time,.operator-inbox-item-foot small{color:var(--muted);font-size:9px}
+.operator-inbox-item p{margin:8px 0;white-space:pre-line;color:#354b5c;font-size:10px;line-height:1.5}
+.operator-inbox-item-foot button{padding:7px 9px;font-size:9px}
+@media(max-width:650px){.operator-inbox-modal{width:100%;max-height:calc(100dvh - 24px)}.operator-inbox-list{padding:13px;max-height:calc(100dvh - 175px)}.operator-inbox-item-head{align-items:flex-start;flex-direction:column;gap:3px}.operator-inbox-item-foot{align-items:flex-start}.operator-session>.operator-inbox-btn,.operator-session>.operator-notification-btn{min-height:42px}}

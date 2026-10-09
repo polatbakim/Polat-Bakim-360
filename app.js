@@ -447,7 +447,7 @@ function phoneNotificationLabel(){
   return push?.pushConfigured?'🔔 Arka Plan Bildirimlerini Aç':permission==='granted'?'🔔 Bildirimi Test Et':'🔔 Bildirimleri Aç'
 }
 function updateOperatorNotificationButton(){
-  const button=$('#operatorNotificationBtn');if(!button)return;const managerPreview=accessRole==='manager';button.classList.toggle('hidden',managerPreview||!operatorTechId);if(managerPreview||!operatorTechId)return;const permission=notificationPermissionState();button.textContent=phoneNotificationLabel();button.classList.toggle('enabled',permission==='granted');button.disabled=permission==='unsupported'
+  const button=$('#operatorNotificationBtn');if(!button)return;const managerPreview=accessRole==='manager';$('#operatorInboxBtn')?.classList.toggle('hidden',managerPreview||!operatorTechId);button.classList.toggle('hidden',managerPreview||!operatorTechId);if(managerPreview||!operatorTechId)return;const permission=notificationPermissionState();button.textContent=phoneNotificationLabel();button.classList.toggle('enabled',permission==='granted');button.disabled=permission==='unsupported'
 }
 function updateManagerPushButton(){
   const button=$('#managerPushBtn');if(!button)return;button.classList.toggle('hidden',accessRole!=='manager');if(accessRole!=='manager')return;button.textContent=phoneNotificationLabel();button.disabled=notificationPermissionState()==='unsupported'
@@ -486,6 +486,33 @@ async function enablePhoneNotifications(){
   if(!info?.pushConfigured){toast('Test bildirimi gönderildi; arka plan bildirimleri henüz kurulmadı.');return}
   try{await cloud.enableWebPush();updateOperatorNotificationButton();updateManagerPushButton();toast('Test bildirimi gönderildi; arka plan bildirimleri açıldı.')}
   catch(error){console.warn('Web Push kaydı başarısız.',error);toast(error.message||'Arka plan bildirimleri açılamadı.')}
+}
+
+let operatorInboxRequest=0;
+function closeOperatorInbox(){operatorInboxRequest++;$('#operatorInboxModal').classList.add('hidden')}
+function operatorInboxOrderId(item){
+  try{const target=new URL(item.target_url,location.href),page=new URL('./index.html',location.href);return target.origin===page.origin&&target.pathname===page.pathname?target.searchParams.get('order')||'':''}catch{return ''}
+}
+async function loadOperatorInbox(){
+  const list=$('#operatorInboxList'),request=++operatorInboxRequest;
+  list.innerHTML='<p class="operator-inbox-message">Bildirimler yükleniyor…</p>';
+  try{
+    const cloud=window.PolatBakimCloud;
+    if(!cloud?.configured){list.innerHTML='<p class="operator-inbox-message">Bildirim geçmişi yalnızca Supabase bağlantısında kullanılabilir.</p>';return}
+    const items=await cloud.listOwnPushEvents();
+    if(request!==operatorInboxRequest||accessRole!=='operator'||$('#operatorInboxModal').classList.contains('hidden'))return;
+    const statusLabels={pending:'Gönderim bekliyor',sending:'Gönderiliyor',sent:'Telefona gönderildi',failed:'Telefon bildirimi gönderilemedi'};
+    list.innerHTML=items.length?items.map(item=>{
+      const orderId=operatorInboxOrderId(item),order=state.orders.find(value=>value.id===orderId&&operatorCanSeeOrder(value,operatorTechId));
+      return `<article class="operator-inbox-item"><div class="operator-inbox-item-head"><strong>${escapeHtml(item.title||'Bildirim')}</strong><time>${escapeHtml(formatDateTime(item.created_at))}</time></div><p>${escapeHtml(item.body||'')}</p><div class="operator-inbox-item-foot"><small>${escapeHtml(statusLabels[item.status]||'Bildirim kaydı')}</small>${order?`<button type="button" class="secondary-btn" data-operator-inbox-order="${escapeHtml(order.id)}">İş emrini aç</button>`:''}</div></article>`
+    }).join(''):'<p class="operator-inbox-message">Henüz bildiriminiz yok.</p>';
+  }catch(error){
+    if(request===operatorInboxRequest&&!$('#operatorInboxModal').classList.contains('hidden')){list.innerHTML='<p class="operator-inbox-message"></p>';list.firstElementChild.textContent=error.message||'Bildirimler yüklenemedi.'}
+  }
+}
+function openOperatorInbox(){
+  if(accessRole!=='operator'||!operatorTechId)return;
+  $('#operatorInboxModal').classList.remove('hidden');loadOperatorInbox();$('#operatorInboxModal .operator-inbox-close')?.focus()
 }
 
 function validCloudState(value){return Boolean(value&&Array.isArray(value.orders)&&Array.isArray(value.assets)&&Array.isArray(value.technicians))}
@@ -1978,6 +2005,12 @@ $('#toggleOperatorPassword').addEventListener('click',e=>{const input=$('#operat
 $('#operatorLogoutBtn').addEventListener('click',()=>lockAccess('operator'));
 $('#operatorSearch').addEventListener('input',renderOperator);
 $('#operatorNotificationBtn').addEventListener('click',enableOperatorNotifications);
+$('#operatorInboxBtn').addEventListener('click',openOperatorInbox);
+$('#operatorInboxRefreshBtn').addEventListener('click',loadOperatorInbox);
+$$('.operator-inbox-close').forEach(button=>button.addEventListener('click',closeOperatorInbox));
+$('#operatorInboxModal').addEventListener('click',event=>{if(event.target===event.currentTarget)closeOperatorInbox()});
+$('#operatorInboxModal').addEventListener('keydown',event=>{if(event.key==='Escape'){event.preventDefault();closeOperatorInbox()}});
+$('#operatorInboxList').addEventListener('click',event=>{const button=event.target.closest('[data-operator-inbox-order]');if(!button||accessRole!=='operator')return;const order=state.orders.find(value=>value.id===button.dataset.operatorInboxOrder&&operatorCanSeeOrder(value,operatorTechId));if(!order){toast('İş emri artık erişilebilir değil.');return}closeOperatorInbox();showOrder(order.id)});
 $('#managerPushBtn').addEventListener('click',enablePhoneNotifications);
 $('#managerLoginForm').addEventListener('submit',async e=>{e.preventDefault();const form=e.currentTarget,f=new FormData(form),error=$('#managerLoginError');error.classList.add('hidden');try{const manager=await authenticateManagerSession(String(f.get('approverId')||''),String(f.get('password')||''));form.reset();toast(`${manager.name} yönetici olarak giriş yaptı.`)}catch(err){error.textContent=err.message;error.classList.remove('hidden');form.elements.password.select()}});
 $('#toggleManagerPassword').addEventListener('click',e=>{const input=$('#managerPassword'),show=input.type==='password';input.type=show?'text':'password';e.currentTarget.textContent=show?'Gizle':'Göster';e.currentTarget.setAttribute('aria-label',show?'Şifreyi gizle':'Şifreyi göster')});
