@@ -34,12 +34,13 @@ jobs:
         env:
           SUPABASE_URL: ${{ vars.SUPABASE_URL }}
           SUPABASE_PUBLISHABLE_KEY: ${{ vars.SUPABASE_PUBLISHABLE_KEY }}
+          WEB_PUSH_PUBLIC_KEY: ${{ vars.WEB_PUSH_PUBLIC_KEY }}
         run: |
           mkdir -p _site/vendor _site/icons
           cp .nojekyll index.html operator.html manifest.webmanifest app.js machine-import.js styles.css avatar-alignment.css completion-time.css fault-catalog.css supabase-cloud.js sw.js _site/
           cp vendor/qrcode.min.js vendor/xlsx.full.min.js _site/vendor/
           cp icons/polat-bakim.svg _site/icons/
-          node -e 'const fs=require("fs"); fs.writeFileSync("_site/supabase-config.js", "window.POLAT_BAKIM_CONFIG="+JSON.stringify({supabaseUrl:process.env.SUPABASE_URL,supabasePublishableKey:process.env.SUPABASE_PUBLISHABLE_KEY,workspaceId:"polat-bakim-main",syncEnabled:true,requireCloud:true})+";\n")'
+          node -e 'const fs=require("fs"); fs.writeFileSync("_site/supabase-config.js", "window.POLAT_BAKIM_CONFIG="+JSON.stringify({supabaseUrl:process.env.SUPABASE_URL,supabasePublishableKey:process.env.SUPABASE_PUBLISHABLE_KEY,pushVapidPublicKey:process.env.WEB_PUSH_PUBLIC_KEY||"",workspaceId:"polat-bakim-main",syncEnabled:true,requireCloud:true})+";\n")'
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
