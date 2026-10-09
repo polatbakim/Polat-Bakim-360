@@ -648,7 +648,7 @@
 
   <div class="modal-backdrop hidden" id="legacyLaborModal" role="dialog" aria-modal="true" aria-labelledby="legacyLaborTitle">
     <div class="modal cost-import-modal">
-      <div class="modal-head"><div><span class="modal-eyebrow">GEÇMİŞ İŞÇİLİK AKTARIMI</span><h2 id="legacyLaborTitle">Excel Kayıtlarını Kontrol Et</h2><p>Bir iş numarasının personel satırları tek kayıtta birleştirilir. Mevcut kayıtlar değiştirilmez.</p></div><button type="button" class="icon-btn legacy-labor-close" aria-label="Pencereyi kapat">×</button></div>
+      <div class="modal-head"><div><span class="modal-eyebrow">GEÇMİŞ İŞÇİLİK AKTARIMI</span><h2 id="legacyLaborTitle">Excel Kayıtlarını Kontrol Et</h2><p>Bir iş numarasının personel satırları birleştirilir. Sadece hiç işlem görmemiş eski kayıtların bekleme durumu düzeltilebilir.</p></div><button type="button" class="icon-btn legacy-labor-close" aria-label="Pencereyi kapat">×</button></div>
       <div class="cost-import-preview"><p id="legacyLaborFileName" class="section-help"></p><div id="legacyLaborSummary" class="machine-import-summary"></div><div id="legacyLaborDetails" class="legacy-labor-details"></div><p class="section-help">Dosya yalnızca bu tarayıcıda okunur; ham Excel GitHub'a yüklenmez. Onaydan sonra kayıtlar canlı Supabase verisine eklenir.</p><p id="legacyLaborError" class="access-error hidden" role="alert"></p></div>
       <div class="modal-actions"><button type="button" class="secondary-btn legacy-labor-close">Vazgeç</button><button type="button" class="primary-btn" id="confirmLegacyLaborBtn">Supabase'e Aktar</button></div>
     </div>
@@ -659,8 +659,8 @@
   <script src="supabase-cloud.js?v=20261009-legacy-labor-v1"></script>
   <script src="vendor/qrcode.min.js"></script>
   <script src="vendor/xlsx.full.min.js"></script>
-  <script src="app.js?v=20261009-legacy-labor-v1"></script>
+  <script src="app.js?v=20261009-legacy-wait-v2"></script>
   <script src="machine-import.js?v=20260930-machine-import-v1"></script>
-  <script src="legacy-labor-import.js?v=20261009-legacy-labor-v1"></script>
+  <script src="legacy-labor-import.js?v=20261009-legacy-wait-v2"></script>
 </body>
 </html>

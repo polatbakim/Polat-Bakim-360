@@ -104,17 +104,35 @@
       if (assetByCode.has(key)) ambiguousCodes.add(key)
       else assetByCode.set(key, asset)
     }
-    const importedKeys = new Set(next.orders.map(order => order.legacyLaborSourceKey).filter(Boolean))
+    const importedByKey = new Map(next.orders.filter(order => order.legacyLaborSourceKey).map(order => [order.legacyLaborSourceKey, order]))
     const existingIds = new Set(next.orders.map(order => order.id))
     const knownLegacyAssets = new Map(next.assets.filter(a => a.historicalOnly).map(a => [a.legacyAssetKey, a]))
     const unmatchedPeople = new Set(), ambiguousPeople = new Set(), unmatchedAssets = new Set()
-    const summary = { sourceRows: source.rowCount, jobs: source.items.length, requests: 0, orders: 0, assigned: 0, skipped: 0, placeholderAssets: 0 }
+    const summary = { sourceRows: source.rowCount, jobs: source.items.length, requests: 0, orders: 0, assigned: 0, waiting: 0, repaired: 0, editedSkipped: 0, skipped: 0, placeholderAssets: 0 }
     const now = new Date().toISOString().slice(0, 19)
     for (const group of source.items) {
       const first = group.rows[0], names = unique(group.rows.map(row => missingPerson(row.Kisi) ? '' : text(row.Kisi)))
       const isRequest = names.length === 0
+      const sourceWaiting = !isRequest && group.rows.some(row => norm(row.Durum) === 'beklemede')
       const id = `${isRequest ? 'HIST-TLP' : 'HIST-IE'}-${group.year}-${group.workNo}`
-      if (importedKeys.has(group.key) || existingIds.has(id)) { summary.skipped++; continue }
+      const imported = importedByKey.get(group.key)
+      if (imported) {
+        const untouched = imported.legacyLaborImport === true && imported.id === id && imported.status === 'Atandı'
+          && !imported.startTime && !imported.completionTime && !(imported.pauseHistory || []).length
+          && !(imported.laborEntries || []).length && !(imported.startedTechnicians || []).length
+          && Array.isArray(imported.events) && imported.events.length === 1 && imported.events[0]?.eventType === 'imported'
+          && imported.updatedAt === imported.faultStart
+        if (sourceWaiting && untouched) {
+          imported.status = 'Beklemede'
+          imported.legacyImportedWaiting = true
+          imported.legacySourceStatus = 'Beklemede'
+          imported.legacyWaitRepairVersion = 1
+          summary.repaired++
+        } else if (sourceWaiting && imported.status !== 'Beklemede' && !untouched) summary.editedSkipped++
+        else summary.skipped++
+        continue
+      }
+      if (existingIds.has(id)) { summary.skipped++; continue }
       const faultStart = stamp(first['ArızaBaslangic'])
       if (!faultStart) throw new Error(`${group.workNo} numaralı işin arıza tarihi okunamadı.`)
       const ptNo = [first['PT No Yeni'], first.PTNo].map(code).find(value => value && !['YOK', 'BOŞ', 'BOS', '-'].includes(value)) || ''
@@ -143,7 +161,7 @@
         unmatchedPeople.add(name)
         return null
       }).filter(Boolean)
-      const status = isRequest ? 'Bekliyor' : 'Atandı'
+      const status = isRequest ? 'Bekliyor' : sourceWaiting ? 'Beklemede' : 'Atandı'
       const laborEntries = group.rows.filter(row => !missingPerson(row.Kisi)).map(row => {
         const person = people.find(item => norm(item.name) === norm(row.Kisi))
         const start = stamp(row.BaslangicSaati), finish = stamp(row.BitisSaati)
@@ -167,7 +185,7 @@
         purchaseOrderNo: '', sapSyncStatus: 'Yerel', status, createdAt: faultStart,
         updatedAt: faultStart, startTime: '', completionTime: '',
         laborEntries: [], legacyLaborEntries: laborEntries, legacyFaultDetails: faultDetails(group.rows),
-        legacySourceStatus: text(first.Durum), legacySourceStart: starts[0] || '', legacySourceFinish: finishes.at(-1) || '',
+        legacySourceStatus: text(first.Durum), legacySourceStart: starts[0] || '', legacySourceFinish: finishes.at(-1) || '', legacyImportedWaiting: sourceWaiting,
         laborCost: 0, materialCost: 0, serviceCost: 0, otherCost: 0, totalCost: 0,
         legacyLaborImport: true, legacyLaborSourceKey: group.key, legacyLaborSourceFile: source.fileName || '', legacyLaborSourceRows: group.sourceRows,
         events: [{ id: `EV-${group.key}`, orderId: id, assetId: asset.id, eventType: 'imported', title: 'Geçmiş Excel kaydı aktarıldı', detail: `${group.rows.length} işçilik satırı · Kaynak iş ${group.workNo}`, statusFrom: '', statusTo: status, actorId: 'SYSTEM', actorName: 'Sistem', actorRole: 'Aktarım', source: 'legacy-labor-xlsx', metadata: { sourceKey: group.key }, timestamp: now }],
@@ -175,7 +193,7 @@
       next.orders.push(order)
       existingIds.add(id)
       if (isRequest) summary.requests++
-      else { summary.orders++; summary.assigned++ }
+      else { summary.orders++; if (sourceWaiting) summary.waiting++; else summary.assigned++ }
     }
     return { next, summary, unmatchedPeople: [...unmatchedPeople].sort((a, b) => a.localeCompare(b, 'tr')), ambiguousPeople: [...ambiguousPeople], unmatchedAssets: [...unmatchedAssets].sort((a, b) => a.localeCompare(b, 'tr')) }
   }
@@ -184,14 +202,14 @@
     const { summary } = plan
     byId('legacyLaborSummary').innerHTML = [
       ['İş', summary.jobs], ['Talep olarak eklenecek', summary.requests], ['İş emri eklenecek', summary.orders],
-      ['Atanmış / açık', summary.assigned], ['Mükerrer / atlanacak', summary.skipped],
+      ['Atanmış / açık', summary.assigned], ['Beklemede açılacak', summary.waiting], ['Eski bekleme düzeltilecek', summary.repaired], ['Değişmiş kayıt / korunacak', summary.editedSkipped], ['Mükerrer / atlanacak', summary.skipped],
     ].map(([label, value]) => `<div><strong>${value}</strong><span>${label}</span></div>`).join('')
     const people = plan.unmatchedPeople.length || plan.ambiguousPeople.length ? `Eşleşmeyen kişi adlarını mevcut operatörlerle eşleştirin. Seçilmeden aktarım yapılamaz.` : 'Tüm kişi adları mevcut personelle eşleşti.'
     const mappingRows = [...new Set([...plan.unmatchedPeople, ...plan.ambiguousPeople])].map(name => `<label>${safe(name)}<select data-legacy-person="${safe(name)}"><option value="">Personel seçin</option>${previewPersonnel.filter(person => !person.inactive && person.loginEnabled !== false && !person.historicalOnly).map(person => `<option value="${safe(person.id)}" ${personMapping[norm(name)] === person.id ? 'selected' : ''}>${safe(person.name)}</option>`).join('')}</select></label>`).join('')
     const assets = plan.unmatchedAssets.length ? `Eşleşmeyen ekipmanlar (${plan.unmatchedAssets.length}): Geçmiş referans kartı oluşturulacak; mevcut makine kartları değiştirilmez.` : 'Ekipman kodları mevcut kartlarla eşleşti.'
-    const warning = 'Kişisi olan işler Atandı olarak açılır, kişisi olmayanlar İş Talebi olarak bekler. Eski kayıtlar için toplu telefon bildirimi oluşmaması amacıyla güncel supabase/web-push.sql dosyasını aktarımdan önce SQL Editor’da çalıştırın.'
+    const warning = 'Excel durumu Beklemede olan ve kişisi bulunan işler Beklemede açılır; kişisi olmayanlar İş Talebi olarak kalır. Eski ara başlangıç/bitişleri kaynak kayıt olarak görünür, canlı işçilik hesabına katılmaz. Önceden yüklenen ve sonradan değiştirilmemiş Atandı kayıtları güvenle düzeltilir; üzerinde işlem yapılanlar korunur.'
     byId('legacyLaborDetails').innerHTML = `<p>${people}</p>${mappingRows ? `<div class="legacy-labor-mappings">${mappingRows}</div>` : ''}<p>${assets}</p><p class="legacy-labor-warning">${warning}</p>`
-    byId('confirmLegacyLaborBtn').disabled = !summary.requests && !summary.orders || Boolean(plan.ambiguousPeople.length || plan.unmatchedPeople.length)
+    byId('confirmLegacyLaborBtn').disabled = !summary.requests && !summary.orders && !summary.repaired || Boolean(plan.ambiguousPeople.length || plan.unmatchedPeople.length)
   }
   function close() { modal.classList.add('hidden'); input.value = ''; groups = null; preview = null; previewSnapshot = null; previewPersonnel = []; personMapping = {}; byId('legacyLaborError').classList.add('hidden') }
   function errorMessage(message) { const node = byId('legacyLaborError'); node.textContent = message; node.classList.remove('hidden') }
@@ -249,16 +267,16 @@
         throw new Error('Canlı veriler değişti. Güncel sayıları kontrol edip tekrar onaylayın.')
       }
       if (current.ambiguousPeople.length || current.unmatchedPeople.length) throw new Error('Personel eşleşmeleri tamamlanmadan aktarım yapılamaz.')
-      const count = current.summary.requests + current.summary.orders
+      const count = current.summary.requests + current.summary.orders + current.summary.repaired
       if (!count) { close(); toast('Yeni kayıt yok; aynı Excel daha önce aktarılmış.'); return }
       current.next.activities = Array.isArray(current.next.activities) ? current.next.activities : []
-      current.next.activities.unshift({ text: `Geçmiş işçilik Excel'inden ${current.summary.orders} iş emri ve ${current.summary.requests} talep aktarıldı.`, date: new Date().toISOString() })
+      current.next.activities.unshift({ text: `Geçmiş işçilik Excel'inden ${current.summary.orders} iş emri ve ${current.summary.requests} talep aktarıldı; ${current.summary.repaired} eski bekleme durumu düzeltildi.`, date: new Date().toISOString() })
       current.next.activities = current.next.activities.slice(0, 40)
       await api.pushState(current.next, version)
       applyCloudState(current.next)
       const result = current.summary
       close()
-      toast(`${result.orders} iş emri, ${result.requests} talep Supabase'e eklendi.`)
+      toast(`${result.orders} iş emri, ${result.requests} talep eklendi; ${result.repaired} bekleme durumu düzeltildi.`)
     } catch (error) { errorMessage(String(error.message || error).includes('SNAPSHOT_CONFLICT') ? 'Başka biri bu sırada kayıt değiştirdi. Yeniden kontrol edip tekrar deneyin.' : error.message || 'Aktarım yapılamadı.') }
     finally { button.disabled = false }
   })
