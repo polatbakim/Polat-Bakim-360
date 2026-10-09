@@ -90,12 +90,18 @@
     const decoded=atob(base64.padEnd(Math.ceil(base64.length/4)*4,'='));
     return Uint8Array.from(decoded,character=>character.charCodeAt(0))
   }
+  function subscriptionUsesCurrentVapidKey(subscription){
+    const storedKey=subscription?.options?.applicationServerKey;
+    if(!storedKey)return true;
+    const actual=new Uint8Array(storedKey),expected=vapidKeyBytes(config.pushVapidPublicKey);
+    return actual.length===expected.length&&actual.every((byte,index)=>byte===expected[index])
+  }
   async function refreshWebPushState(){
     pushEnabled=false;
     if(!client||!profile?.active||!config.pushVapidPublicKey||!('Notification' in window)||Notification.permission!=='granted'||!('serviceWorker' in navigator))return false;
     const registration=await navigator.serviceWorker.getRegistration('./');
     const subscription=await registration?.pushManager?.getSubscription();
-    if(!subscription)return false;
+    if(!subscription||!subscriptionUsesCurrentVapidKey(subscription))return false;
     const {data,error}=await client.from('push_subscriptions').select('endpoint').eq('user_id',profile.id).eq('endpoint',subscription.endpoint).maybeSingle();
     if(error)return false;pushEnabled=Boolean(data);return pushEnabled
   }
@@ -107,11 +113,18 @@
     if(Notification.permission!=='granted')throw new Error('Önce telefonun bildirim iznini verin.');
     await navigator.serviceWorker.register('./sw.js');
     const registration=await navigator.serviceWorker.ready;
-    const existing=await registration.pushManager.getSubscription();
-    const subscription=existing||await registration.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:vapidKeyBytes(config.pushVapidPublicKey)});
+    let subscription=await registration.pushManager.getSubscription();
+    if(subscription&&!subscriptionUsesCurrentVapidKey(subscription)){
+      const {error:removeError}=await client.from('push_subscriptions').delete().eq('endpoint',subscription.endpoint).eq('user_id',profile.id);
+      if(removeError)throw new Error('Eski telefon aboneliği kaldırılamadı: '+removeError.message);
+      if(!await subscription.unsubscribe())throw new Error('Eski telefon aboneliği kaldırılamadı. Telefon bildirimlerini kapatıp yeniden açın.');
+      subscription=null;
+    }
+    const created=!subscription;
+    subscription=subscription||await registration.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:vapidKeyBytes(config.pushVapidPublicKey)});
     const endpoint=new URL(subscription.endpoint);
     if(endpoint.protocol!=='https:'||endpoint.hostname!=='fcm.googleapis.com'){
-      if(!existing)await subscription.unsubscribe();
+      if(created)await subscription.unsubscribe();
       throw new Error('Bu tarayıcının bildirim servisi henüz desteklenmiyor. Android Chrome kullanın.');
     }
     const {error}=await client.from('push_subscriptions').upsert({
