@@ -179,7 +179,7 @@
       </section>
 
       <section class="view" id="ordersView">
-        <div class="view-intro"><div><h2>İş Emirleri</h2><p>Bakım işlerini atayın, çalışma sürelerini ve teknik sonuçları takip edin.</p></div><div class="intro-actions"><button class="danger-btn" id="deleteAllOrdersBtn">🗑 Tümünü Sil</button><button class="secondary-btn" id="exportBtn">⇩ Dışa Aktar</button><button class="primary-btn open-order-modal">＋ İş Emri Oluştur</button></div></div>
+        <div class="view-intro"><div><h2>İş Emirleri</h2><p>Bakım işlerini atayın, çalışma sürelerini ve teknik sonuçları takip edin.</p></div><div class="intro-actions"><input class="hidden" id="legacyLaborFile" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"><button class="secondary-btn hidden" id="importLegacyLaborBtn" type="button">⇧ Eski İşçilik Excel'i</button><button class="danger-btn" id="deleteAllOrdersBtn">🗑 Tümünü Sil</button><button class="secondary-btn" id="exportBtn">⇩ Dışa Aktar</button><button class="primary-btn open-order-modal">＋ İş Emri Oluştur</button></div></div>
         <div class="order-tabs" id="orderTabs"><button class="active" data-status="">Tümü <span id="tabAll">0</span></button><button data-status="Bekliyor">Atama Yapılmadı <span id="tabWaiting">0</span></button><button data-status="Atandı">Atandı <span id="tabAssigned">0</span></button><button data-status="Devam Ediyor">Devam Eden <span id="tabProgress">0</span></button><button data-status="Beklemede">Beklemede <span id="tabHold">0</span></button><button data-status="Teyit Bekliyor">Teyit Bekleyen <span id="tabConfirmation">0</span></button><button data-status="Tamamlandı">Tamamlanan <span id="tabDone">0</span></button></div>
         <div class="panel">
           <div class="active-filter-bar hidden" id="activeFilterBar"><div><span>ETKİLEŞİMLİ SÜZME</span><strong id="activeFilterLabel"></strong><small id="activeFilterInfo"></small></div><button id="clearDrillBtn">Filtreyi Temizle ×</button></div>
@@ -646,12 +646,21 @@
     <div class="modal small-modal"><div class="modal-head"><div><span class="modal-eyebrow">MAKİNE KARTLARI</span><h2 id="machineImportTitle">JSON Aktarımını Kontrol Et</h2><p id="machineImportFileName"></p></div><button type="button" class="icon-btn machine-import-close" aria-label="Kapat">×</button></div><div class="form-section"><div class="machine-import-summary" id="machineImportSummary"></div><p class="section-help">Aynı kodlu kartlar güncellenir, yeni kodlar eklenir. Mevcut tezgâh puanı, canlı durum, bakım geçmişi ve ilişkili kayıtlar korunur. Dosyadaki iş geçmişi ve sözleşmeler bu işlemde aktarılmaz.</p><p class="access-error hidden" id="machineImportError" role="alert"></p></div><div class="modal-actions"><button type="button" class="secondary-btn machine-import-close">Vazgeç</button><button type="button" class="primary-btn" id="confirmMachineImportBtn">Supabase'e Aktar</button></div></div>
   </div>
 
+  <div class="modal-backdrop hidden" id="legacyLaborModal" role="dialog" aria-modal="true" aria-labelledby="legacyLaborTitle">
+    <div class="modal cost-import-modal">
+      <div class="modal-head"><div><span class="modal-eyebrow">GEÇMİŞ İŞÇİLİK AKTARIMI</span><h2 id="legacyLaborTitle">Excel Kayıtlarını Kontrol Et</h2><p>Bir iş numarasının personel satırları tek kayıtta birleştirilir. Mevcut kayıtlar değiştirilmez.</p></div><button type="button" class="icon-btn legacy-labor-close" aria-label="Pencereyi kapat">×</button></div>
+      <div class="cost-import-preview"><p id="legacyLaborFileName" class="section-help"></p><div id="legacyLaborSummary" class="machine-import-summary"></div><div id="legacyLaborDetails" class="legacy-labor-details"></div><p class="section-help">Dosya yalnızca bu tarayıcıda okunur; ham Excel GitHub'a yüklenmez. Onaydan sonra kayıtlar canlı Supabase verisine eklenir.</p><p id="legacyLaborError" class="access-error hidden" role="alert"></p></div>
+      <div class="modal-actions"><button type="button" class="secondary-btn legacy-labor-close">Vazgeç</button><button type="button" class="primary-btn" id="confirmLegacyLaborBtn">Supabase'e Aktar</button></div>
+    </div>
+  </div>
+
   <div class="toast hidden" id="toast"><span>✓</span><p></p></div>
   <script src="supabase-config.js"></script>
-  <script src="supabase-cloud.js?v=20261009-operator-inbox"></script>
+  <script src="supabase-cloud.js?v=20261009-legacy-labor-v1"></script>
   <script src="vendor/qrcode.min.js"></script>
   <script src="vendor/xlsx.full.min.js"></script>
-  <script src="app.js?v=20261009-operator-inbox"></script>
+  <script src="app.js?v=20261009-legacy-labor-v1"></script>
   <script src="machine-import.js?v=20260930-machine-import-v1"></script>
+  <script src="legacy-labor-import.js?v=20261009-legacy-labor-v1"></script>
 </body>
 </html>

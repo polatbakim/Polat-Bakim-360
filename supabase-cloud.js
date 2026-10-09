@@ -167,6 +167,12 @@
     const {data,error}=await client.rpc('save_app_snapshot',{p_id:config.workspaceId||'polat-bakim-main',p_payload:payload,p_expected_version:expectedVersion});
     if(error)throw error;version=Number(data?.version??data?.[0]?.version??version+1);syncReady=true;emit('synced',{updatedAt:new Date().toISOString()});return data
   }
+  async function checkLegacyLaborImportGuard(){
+    await init();if(!client||!profile?.is_admin||!profile?.manager_access)return false;
+    const {data,error}=await client.rpc('legacy_labor_import_guard_v1');
+    if(error)return false;
+    return data===true
+  }
   async function pullOperatorState(){
     await init();if(!client||!profile?.operator_access)return null;emit('syncing');
     const workspace=config.workspaceId||'polat-bakim-main';
@@ -193,5 +199,5 @@
   function onStatus(fn){listeners.add(fn);return()=>listeners.delete(fn)}
   function getInfo(){return{configured,connected:Boolean(client&&profile),profile,version,syncReady,pendingSave:Boolean(saveTimer)||activeSaves>0,pushConfigured:Boolean(config.pushVapidPublicKey),pushEnabled}}
 
-  window.PolatBakimCloud={configured,init,signIn,signInOperator,signInOperatorEmail,listProfiles,manageUser,changeOwnPassword,uploadLayout,downloadLayout,deleteLayout,enableWebPush,disableWebPush,listOwnPushEvents,signOut,pullState,pullOperatorState,pushState,pushOperatorOrder,queueState,startRealtime,onStatus,getInfo};
+  window.PolatBakimCloud={configured,init,signIn,signInOperator,signInOperatorEmail,listProfiles,manageUser,changeOwnPassword,uploadLayout,downloadLayout,deleteLayout,enableWebPush,disableWebPush,listOwnPushEvents,signOut,pullState,pullOperatorState,pushState,checkLegacyLaborImportGuard,pushOperatorOrder,queueState,startRealtime,onStatus,getInfo};
 })();
