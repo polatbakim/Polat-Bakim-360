@@ -1,7 +1,7 @@
 (function(){
   const config=window.POLAT_BAKIM_CONFIG||{};
   const configured=Boolean(config.supabaseUrl&&config.supabasePublishableKey);
-  let client=null,profile=null,version=0,syncReady=false,saveTimer=null,activeSaves=0,subscription=null,initializing=null;
+  let client=null,profile=null,version=0,syncReady=false,saveTimer=null,activeSaves=0,subscription=null,initializing=null,pushEnabled=false;
   const listeners=new Set();
 
   function emit(status,detail={}){
@@ -28,7 +28,9 @@
     const {data:{user}}=await client.auth.getUser();
     if(!user){profile=null;emit('signed-out');return null}
     const {data,error}=await client.from('profiles').select('id,email,full_name,role,technician_id,active,manager_access,operator_access,is_admin,must_change_password,visible_pages,delete_permissions,specialty,phone,hourly_rate').eq('id',user.id).single();
-    if(error)throw error;profile=data;emit('ready');return profile
+    if(error)throw error;profile=data;
+    try{await refreshWebPushState()}catch(error){console.warn('Telefon bildirim durumu okunamadı.',error)}
+    emit('ready');return profile
   }
   async function signIn(email,password){
     await init();if(!client)throw new Error('Supabase bağlantısı henüz yapılandırılmamış.');
@@ -83,7 +85,53 @@
     if(!client||!profile?.manager_access)throw new Error('Yönetici girişi gerekir.');
     const {error}=await client.storage.from('maintenance-attachments').remove([path]);if(error)throw error
   }
-  async function signOut(){if(client)await client.auth.signOut();profile=null;syncReady=false;stopRealtime();emit('signed-out')}
+  function vapidKeyBytes(value){
+    const base64=String(value||'').replace(/-/g,'+').replace(/_/g,'/');
+    const decoded=atob(base64.padEnd(Math.ceil(base64.length/4)*4,'='));
+    return Uint8Array.from(decoded,character=>character.charCodeAt(0))
+  }
+  async function refreshWebPushState(){
+    pushEnabled=false;
+    if(!client||!profile?.active||!config.pushVapidPublicKey||!('Notification' in window)||Notification.permission!=='granted'||!('serviceWorker' in navigator))return false;
+    const registration=await navigator.serviceWorker.getRegistration('./');
+    const subscription=await registration?.pushManager?.getSubscription();
+    if(!subscription)return false;
+    const {data,error}=await client.from('push_subscriptions').select('endpoint').eq('user_id',profile.id).eq('endpoint',subscription.endpoint).maybeSingle();
+    if(error)return false;pushEnabled=Boolean(data);return pushEnabled
+  }
+  async function enableWebPush(){
+    await init();
+    if(!client||!profile?.active||profile.must_change_password)throw new Error('Önce aktif hesabınızla giriş yapın.');
+    if(!config.pushVapidPublicKey)throw new Error('Arka plan bildirimleri henüz yapılandırılmadı.');
+    if(!('serviceWorker' in navigator)||!('PushManager' in window))throw new Error('Bu cihaz Web Push desteklemiyor.');
+    if(Notification.permission!=='granted')throw new Error('Önce telefonun bildirim iznini verin.');
+    await navigator.serviceWorker.register('./sw.js');
+    const registration=await navigator.serviceWorker.ready;
+    const existing=await registration.pushManager.getSubscription();
+    const subscription=existing||await registration.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:vapidKeyBytes(config.pushVapidPublicKey)});
+    const endpoint=new URL(subscription.endpoint);
+    if(endpoint.protocol!=='https:'||endpoint.hostname!=='fcm.googleapis.com'){
+      if(!existing)await subscription.unsubscribe();
+      throw new Error('Bu tarayıcının bildirim servisi henüz desteklenmiyor. Android Chrome kullanın.');
+    }
+    const {error}=await client.from('push_subscriptions').upsert({
+      endpoint:subscription.endpoint,user_id:profile.id,subscription:subscription.toJSON(),updated_at:new Date().toISOString(),
+    },{onConflict:'endpoint'});
+    if(error)throw new Error('Telefon Supabase bildirimlerine kaydedilemedi: '+error.message);
+    pushEnabled=true;return true
+  }
+  async function disableWebPush(){
+    if(!('serviceWorker' in navigator))return;
+    const registration=await navigator.serviceWorker.getRegistration('./');
+    const subscription=await registration?.pushManager?.getSubscription();
+    if(!subscription)return;
+    if(client&&profile)await client.from('push_subscriptions').delete().eq('endpoint',subscription.endpoint);
+    await subscription.unsubscribe();pushEnabled=false
+  }
+  async function signOut(){
+    try{await disableWebPush()}catch(error){console.warn('Telefon bildirimi aboneliği kaldırılamadı.',error)}
+    if(client)await client.auth.signOut();profile=null;syncReady=false;pushEnabled=false;stopRealtime();emit('signed-out')
+  }
   async function pullState(){
     await init();if(!client||!profile?.manager_access)return null;
     emit('syncing');
@@ -121,7 +169,7 @@
   }
   function stopRealtime(){if(client&&subscription)client.removeChannel(subscription);subscription=null}
   function onStatus(fn){listeners.add(fn);return()=>listeners.delete(fn)}
-  function getInfo(){return{configured,connected:Boolean(client&&profile),profile,version,syncReady,pendingSave:Boolean(saveTimer)||activeSaves>0}}
+  function getInfo(){return{configured,connected:Boolean(client&&profile),profile,version,syncReady,pendingSave:Boolean(saveTimer)||activeSaves>0,pushConfigured:Boolean(config.pushVapidPublicKey),pushEnabled}}
 
-  window.PolatBakimCloud={configured,init,signIn,signInOperator,signInOperatorEmail,listProfiles,manageUser,changeOwnPassword,uploadLayout,downloadLayout,deleteLayout,signOut,pullState,pullOperatorState,pushState,pushOperatorOrder,queueState,startRealtime,onStatus,getInfo};
+  window.PolatBakimCloud={configured,init,signIn,signInOperator,signInOperatorEmail,listProfiles,manageUser,changeOwnPassword,uploadLayout,downloadLayout,deleteLayout,enableWebPush,disableWebPush,signOut,pullState,pullOperatorState,pushState,pushOperatorOrder,queueState,startRealtime,onStatus,getInfo};
 })();

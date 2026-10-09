@@ -439,14 +439,25 @@ function toast(message){
 }
 function operatorAssignmentStorageKey(id){return `${ASSIGNMENT_NOTIFICATION_KEY}_${id}`}
 function notificationPermissionState(){return !('Notification' in window)?'unsupported':Notification.permission}
+function phoneNotificationLabel(){
+  const permission=notificationPermissionState(),push=window.PolatBakimCloud?.getInfo?.();
+  if(permission==='unsupported')return '🔕 Desteklenmiyor';
+  if(permission==='denied')return '🔕 Bildirim Engelli';
+  if(push?.pushEnabled)return '🔔 Arka Plan Bildirimleri Açık';
+  return push?.pushConfigured?'🔔 Arka Plan Bildirimlerini Aç':permission==='granted'?'🔔 Bildirimi Test Et':'🔔 Bildirimleri Aç'
+}
 function updateOperatorNotificationButton(){
-  const button=$('#operatorNotificationBtn');if(!button)return;const managerPreview=accessRole==='manager';button.classList.toggle('hidden',managerPreview||!operatorTechId);if(managerPreview||!operatorTechId)return;const permission=notificationPermissionState();button.textContent=permission==='granted'?'🔔 Bildirimler Açık':permission==='denied'?'🔕 Bildirim Engelli':permission==='unsupported'?'🔕 Desteklenmiyor':'🔔 Bildirimleri Aç';button.classList.toggle('enabled',permission==='granted');button.disabled=permission==='unsupported'
+  const button=$('#operatorNotificationBtn');if(!button)return;const managerPreview=accessRole==='manager';button.classList.toggle('hidden',managerPreview||!operatorTechId);if(managerPreview||!operatorTechId)return;const permission=notificationPermissionState();button.textContent=phoneNotificationLabel();button.classList.toggle('enabled',permission==='granted');button.disabled=permission==='unsupported'
+}
+function updateManagerPushButton(){
+  const button=$('#managerPushBtn');if(!button)return;button.classList.toggle('hidden',accessRole!=='manager');if(accessRole!=='manager')return;button.textContent=phoneNotificationLabel();button.disabled=notificationPermissionState()==='unsupported'
 }
 function assignmentBeep(){
   try{const AudioContext=window.AudioContext||window.webkitAudioContext;if(!AudioContext)return;const context=new AudioContext(),osc=context.createOscillator(),gain=context.createGain();osc.frequency.setValueAtTime(880,context.currentTime);gain.gain.setValueAtTime(.0001,context.currentTime);gain.gain.exponentialRampToValueAtTime(.13,context.currentTime+.02);gain.gain.exponentialRampToValueAtTime(.0001,context.currentTime+.32);osc.connect(gain).connect(context.destination);osc.start();osc.stop(context.currentTime+.34);osc.onended=()=>context.close()}catch{}
 }
 async function showAssignmentNotification(order){
   const asset=assetById(order.assetId),title='Yeni iş emri atandı',body=`${order.id} · ${order.title}\n${asset.code||''} ${asset.name||''}`.trim();toast(`🔔 ${title}: ${order.title}`);navigator.vibrate?.([180,80,180]);assignmentBeep();
+  if(window.PolatBakimCloud?.getInfo?.().pushEnabled)return; // Sunucu aynı işi Web Push ile bildirir.
   if(notificationPermissionState()!=='granted')return;const options={body,icon:'./icons/polat-bakim.svg',badge:'./icons/polat-bakim.svg',tag:`assignment-${order.id}`,renotify:true,data:{orderId:order.id,url:`./index.html?role=operator&order=${encodeURIComponent(order.id)}`}};
   try{if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol)){const registration=await navigator.serviceWorker.ready;await registration.showNotification(title,options)}else new Notification(title,options)}catch(error){console.warn('Sistem bildirimi gösterilemedi.',error)}
 }
@@ -455,19 +466,26 @@ if(accessRole!=='operator'||!operatorTechId)return;const key=operatorAssignmentS
 }
 async function enableOperatorNotifications(){
   if(!operatorTechId||accessRole!=='operator')return;
+  await enablePhoneNotifications()
+}
+async function enablePhoneNotifications(){
+  if(accessRole!=='operator'&&accessRole!=='manager')return;
   if(!('Notification' in window)||!('serviceWorker' in navigator)){toast('Bu tarayıcı telefon bildirimlerini desteklemiyor. Program içi uyarılar çalışmaya devam eder.');return}
   if(location.protocol!=='https:'){toast('Telefon bildirimleri yalnızca GitHub HTTPS adresinde etkinleşir.');return}
   let permission;
   try{permission=Notification.permission==='granted'?'granted':await Notification.requestPermission()}
   catch(error){console.warn('Bildirim izni istenemedi.',error);toast('Bildirim izni istenemedi. Telefonun uygulama izinlerini kontrol edin.');return}
-  updateOperatorNotificationButton();
+  updateOperatorNotificationButton();updateManagerPushButton();
   if(permission!=='granted'){toast(permission==='denied'?'Bildirim izni engellendi. Telefonun uygulama ayarlarından açabilirsiniz.':'Bildirim izni verilmedi.');return}
   try{
     await navigator.serviceWorker.register('./sw.js');
     const registration=await navigator.serviceWorker.ready;
-    await registration.showNotification('Polat Bakım 360',{body:'Test bildirimi başarıyla gösterildi. Uygulama açıkken yeni iş atamaları bildirilecektir.',icon:'./icons/polat-bakim.svg',tag:'notification-enabled'});
-    toast('Bildirim izni açık; test bildirimi gönderildi.');
-  }catch(error){console.warn('Test bildirimi gösterilemedi.',error);toast('İzin verildi ancak test bildirimi gösterilemedi. Uygulamayı yenileyip tekrar deneyin.')}
+    await registration.showNotification('Polat Bakım 360',{body:'Telefonunuzda bildirim gösterimi çalışıyor.',icon:'./icons/polat-bakim.svg',tag:'notification-enabled'});
+  }catch(error){console.warn('Test bildirimi gösterilemedi.',error);toast('İzin verildi ancak test bildirimi gösterilemedi. Uygulamayı yenileyip tekrar deneyin.');return}
+  const cloud=window.PolatBakimCloud,info=cloud?.getInfo?.();
+  if(!info?.pushConfigured){toast('Test bildirimi gönderildi; arka plan bildirimleri henüz kurulmadı.');return}
+  try{await cloud.enableWebPush();updateOperatorNotificationButton();updateManagerPushButton();toast('Test bildirimi gönderildi; arka plan bildirimleri açıldı.')}
+  catch(error){console.warn('Web Push kaydı başarısız.',error);toast(error.message||'Arka plan bildirimleri açılamadı.')}
 }
 
 function validCloudState(value){return Boolean(value&&Array.isArray(value.orders)&&Array.isArray(value.assets)&&Array.isArray(value.technicians))}
@@ -686,6 +704,7 @@ function notificationItems(){
 function closeNotifications(){const panel=$('#notificationPanel'),button=$('#notificationBtn');panel?.classList.add('hidden');button?.setAttribute('aria-expanded','false')}
 function renderNotifications(){
   const button=$('#notificationBtn'),panel=$('#notificationPanel'),badge=$('#notificationCount'),list=$('#notificationList');if(!button||!panel||!badge||!list)return;
+  updateManagerPushButton();
   const items=notificationItems();badge.textContent=items.length>99?'99+':String(items.length);badge.classList.toggle('hidden',!items.length);button.setAttribute('aria-label',items.length?`Bildirimler, ${items.length} bekleyen kayıt`:'Bildirimler, bekleyen kayıt yok');
   list.innerHTML=items.length?items.map(item=>`<button type="button" class="notification-item" data-notification-view="${item.view}" data-notification-id="${escapeHtml(item.id)}"><span class="notification-kind">${escapeHtml(item.kind)}</span><strong>${escapeHtml(item.title)}</strong><small>${escapeHtml(item.detail)}</small></button>`).join(''):'<p class="notification-empty">Bekleyen bildirim yok.</p>';
   if(accessRole!=='manager')closeNotifications()
@@ -1959,6 +1978,7 @@ $('#toggleOperatorPassword').addEventListener('click',e=>{const input=$('#operat
 $('#operatorLogoutBtn').addEventListener('click',()=>lockAccess('operator'));
 $('#operatorSearch').addEventListener('input',renderOperator);
 $('#operatorNotificationBtn').addEventListener('click',enableOperatorNotifications);
+$('#managerPushBtn').addEventListener('click',enablePhoneNotifications);
 $('#managerLoginForm').addEventListener('submit',async e=>{e.preventDefault();const form=e.currentTarget,f=new FormData(form),error=$('#managerLoginError');error.classList.add('hidden');try{const manager=await authenticateManagerSession(String(f.get('approverId')||''),String(f.get('password')||''));form.reset();toast(`${manager.name} yönetici olarak giriş yaptı.`)}catch(err){error.textContent=err.message;error.classList.remove('hidden');form.elements.password.select()}});
 $('#toggleManagerPassword').addEventListener('click',e=>{const input=$('#managerPassword'),show=input.type==='password';input.type=show?'text':'password';e.currentTarget.textContent=show?'Gizle':'Göster';e.currentTarget.setAttribute('aria-label',show?'Şifreyi gizle':'Şifreyi göster')});
 $('#managerLogoutBtn').addEventListener('click',()=>lockAccess('manager'));
