@@ -72,7 +72,10 @@ export default {
         if (statusCode === 404 || statusCode === 410) {
           await ctx.supabaseAdmin.from('push_subscriptions').delete().eq('endpoint', item.endpoint)
         } else {
-          console.error('Web Push gönderimi başarısız:', statusCode || 'network error')
+          // Push servisinin kısa hata metni, 403 anahtar uyuşmazlığı ile diğer 403 nedenlerini ayırır.
+          // İstek başlıklarını, abonelik URL'sini veya anahtarları asla loglama.
+          const responseBody = String((error as { body?: string })?.body || '').replace(/\s+/g, ' ').slice(0, 240)
+          console.error('Web Push gönderimi başarısız:', statusCode || 'network error', responseBody || '(yanıt metni yok)')
         }
         failed++
       }
