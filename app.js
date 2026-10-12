@@ -147,7 +147,7 @@ function operatorClock(order,id){return order?.operatorWorkByTechnician?.[String
 function operatorIsWaiting(order,id){const clock=operatorClock(order,id);return clock?clock.state==='waiting':order?.status==='Beklemede'&&operatorHasStarted(order,id)}
 function operatorIsWorking(order,id){if(order?.status!=='Devam Ediyor')return false;const clock=operatorClock(order,id);return clock?clock.state==='active':operatorHasStarted(order,id)}
 function operatorParticipants(order){return [...new Set([order?.technicianId,...(order?.assignedTechnicians||[]),...(order?.additionalTechnicians||[]),...(order?.claimedTechnicians||[])].filter(Boolean).map(String))]}
-function operatorCanAddPerson(order,id){return Boolean(order&&id&&order.assignmentMode!=='all'&&['Atandı','Beklemede'].includes(order.status)&&!order.completionTime&&orderAssignedToTechnician(order,id)&&operatorParticipants(order).length===1)}
+function operatorCanAddPerson(order,id){return Boolean(order&&id&&order.assignmentMode!=='all'&&['Atandı','Devam Ediyor','Beklemede'].includes(order.status)&&!order.completionTime&&orderAssignedToTechnician(order,id)&&operatorParticipants(order).length===1)}
 function operatorClockPauseMinutes(clock){return (clock?.pauses||[]).reduce((sum,pause)=>sum+minutesBetween(pause.start,pause.end),0)}
 function operatorHasStarted(order,id){
   if(!order||!id)return false;
