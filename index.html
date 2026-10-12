@@ -585,6 +585,15 @@
     </form>
   </div>
 
+  <div class="modal-backdrop hidden" id="operatorAddPersonModal" role="dialog" aria-modal="true" aria-labelledby="operatorAddPersonTitle">
+    <form class="modal small-modal" id="operatorAddPersonForm">
+      <div class="modal-head"><div><span class="modal-eyebrow">İŞ EMRİ EKİBİ</span><h2 id="operatorAddPersonTitle">Kişi Ekle</h2><p>Seçilen operatör işi kendi ekranında görür. Çalışma ve bekleme saatleri kendi işlemleriyle başlar.</p></div><button type="button" class="icon-btn operator-add-person-close" aria-label="Kapat">×</button></div>
+      <input type="hidden" name="orderId">
+      <div class="form-section"><div class="form-grid"><label class="full">Eklenecek operatör<select name="technicianId" required></select></label></div><p class="access-error hidden" id="operatorAddPersonError" role="alert"></p></div>
+      <div class="modal-actions"><button type="button" class="secondary-btn operator-add-person-close">Vazgeç</button><button type="submit" class="primary-btn">Kişiyi Ata</button></div>
+    </form>
+  </div>
+
   <div class="modal-backdrop hidden" id="holdReasonModal" role="dialog" aria-modal="true" aria-labelledby="holdReasonTitle">
     <form class="modal small-modal hold-reason-modal" id="holdReasonForm">
       <div class="modal-head"><div><span class="modal-eyebrow">BEKLEME KAYDI</span><h2 id="holdReasonTitle">İş neden beklemeye alınıyor?</h2><p>Ara verme başlangıç saati otomatik kaydedilecektir.</p></div><button type="button" class="icon-btn hold-reason-close" aria-label="Pencereyi kapat">×</button></div>
@@ -656,10 +665,10 @@
 
   <div class="toast hidden" id="toast"><span>✓</span><p></p></div>
   <script src="supabase-config.js"></script>
-  <script src="supabase-cloud.js?v=20261009-legacy-labor-v1"></script>
+  <script src="supabase-cloud.js?v=20261012-operator-crew-v1"></script>
   <script src="vendor/qrcode.min.js"></script>
   <script src="vendor/xlsx.full.min.js"></script>
-  <script src="app.js?v=20261009-legacy-wait-v2"></script>
+  <script src="app.js?v=20261012-operator-crew-v1"></script>
   <script src="machine-import.js?v=20260930-machine-import-v1"></script>
   <script src="legacy-labor-import.js?v=20261009-legacy-wait-v2"></script>
 </body>
