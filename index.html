@@ -520,7 +520,7 @@
       <div class="form-section sap-reference-section"><div class="section-heading"><div><h3>SAP ve satın alma referansları</h3><span>Bu numaralar ileride SAP entegrasyonunda iş emrinin eşleştirme anahtarları olacaktır.</span></div></div><div class="form-grid"><label>SAP bildirim durumu<select name="managerNotificationStatus"><option>Yok</option><option>Var</option></select></label><label>SAP bildirim numarası<input name="managerNotificationNo" placeholder="Örn. 10016125"></label><label class="full">Satın Alma Bildirim Numarası<input name="managerPurchaseOrderNo" placeholder="Örn. 4500012345"></label></div></div>
       <div class="form-section"><div class="section-heading"><h3>İş emri çalışma saatleri</h3><span>Başlama, bitirme ve ara verme zamanlarını yönetici düzeltebilir</span></div><div class="form-grid manager-order-times"><label>İşe başlama<input type="datetime-local" name="managerStartTime" required></label><label>İşi bitirme<input type="datetime-local" name="managerCompletionTime" required></label><label>Ara başlangıcı<input type="datetime-local" name="managerPauseStart"></label><label>Ara bitişi<input type="datetime-local" name="managerPauseEnd"></label><label class="full">Ara verme nedeni<textarea name="managerPauseReason" rows="2" placeholder="Ara verildiyse nedeni zorunludur"></textarea></label></div></div>
       <div class="form-section manager-factory-section">
-        <div class="section-heading"><div><h3>Fabrika çalışma takvimi</h3><span>Ana, ikinci ve üçüncü kişinin çalışma tarihleri otomatik listelenir. Tatil günleri süreye katılmaz.</span></div><button type="button" class="secondary-btn" id="managerAddFactoryDayBtn">＋ Gün Ekle</button></div>
+        <div class="section-heading"><div><h3>Fabrika çalışma takvimi</h3><span>Yalnızca işçilik başlangıç veya bitiş kaydı bulunan tarihler listelenir. Tatil günleri süreye katılmaz.</span></div><button type="button" class="secondary-btn" id="managerAddFactoryDayBtn">＋ Gün Ekle</button></div>
         <div class="manager-factory-summary"><span>Hesaplanan arıza duruş süresi</span><b id="managerCalculatedDowntime">0 dk</b></div>
         <div class="manager-factory-schedule" id="managerFactoryScheduleRows"></div>
       </div>
@@ -665,10 +665,10 @@
 
   <div class="toast hidden" id="toast"><span>✓</span><p></p></div>
   <script src="supabase-config.js"></script>
-  <script src="supabase-cloud.js?v=20261012-result-form-v1"></script>
+  <script src="supabase-cloud.js?v=20261013-labor-days-v1"></script>
   <script src="vendor/qrcode.min.js"></script>
   <script src="vendor/xlsx.full.min.js"></script>
-  <script src="app.js?v=20261012-result-form-v1"></script>
+  <script src="app.js?v=20261013-labor-days-v1"></script>
   <script src="machine-import.js?v=20260930-machine-import-v1"></script>
   <script src="legacy-labor-import.js?v=20261009-legacy-wait-v2"></script>
 </body>
