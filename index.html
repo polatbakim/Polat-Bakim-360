@@ -8,7 +8,7 @@
   <meta name="theme-color" content="#0b8174">
   <link rel="icon" type="image/svg+xml" href="icons/polat-bakim.svg?v=20261001">
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="stylesheet" href="styles.css?v=20261014-unit-asset-picker-v1">
+  <link rel="stylesheet" href="styles.css?v=20261016-person-labor-v1">
   <link rel="stylesheet" href="fault-catalog.css?v=20260929-time-save">
   <link rel="stylesheet" href="completion-time.css?v=20261002-mobile-correction">
   <link rel="stylesheet" href="avatar-alignment.css?v=20260929-avatar-center">
@@ -598,7 +598,7 @@
     <form class="modal small-modal hold-reason-modal" id="holdReasonForm">
       <div class="modal-head"><div><span class="modal-eyebrow">BEKLEME KAYDI</span><h2 id="holdReasonTitle">İş neden beklemeye alınıyor?</h2><p>Ara verme başlangıç saati otomatik kaydedilecektir.</p></div><button type="button" class="icon-btn hold-reason-close" aria-label="Pencereyi kapat">×</button></div>
       <input type="hidden" name="orderId">
-      <div class="form-section"><div class="form-grid"><label class="full">Bekleme nedeni<select name="reasonType" required><option value="">Neden seçin</option><option>Malzeme / yedek parça bekleniyor</option><option>Üretim / makine uygunluğu bekleniyor</option><option>Dış servis bekleniyor</option><option>Enerji / izin / güvenlik bekleniyor</option><option>Personel / ekipman bekleniyor</option><option>Diğer</option></select></label><label class="full">Açıklama<textarea name="reasonDetail" rows="3" required placeholder="Bekleme nedenini kısaca açıklayın"></textarea></label></div></div>
+      <div class="form-section"><div class="form-grid"><label class="full">Bekleme nedeni<select name="reasonType" required><option value="">Neden seçin</option><option>Malzeme / yedek parça bekleniyor</option><option>Üretim / makine uygunluğu bekleniyor</option><option>Dış servis bekleniyor</option><option>Enerji / izin / güvenlik bekleniyor</option><option>Personel / ekipman bekleniyor</option><option>Başka işe geçme</option><option>Diğer</option></select></label><label class="full">Açıklama<textarea name="reasonDetail" rows="3" required placeholder="Bekleme nedenini kısaca açıklayın"></textarea></label></div></div>
       <div class="modal-actions"><button type="button" class="secondary-btn hold-reason-close">Vazgeç</button><button type="submit" class="primary-btn">Ⅱ Beklemeye Al</button></div>
     </form>
   </div>
@@ -668,7 +668,7 @@
   <script src="supabase-cloud.js?v=20261014-unit-asset-picker-v1"></script>
   <script src="vendor/qrcode.min.js"></script>
   <script src="vendor/xlsx.full.min.js"></script>
-  <script src="app.js?v=20261014-all-assets-v2"></script>
+  <script src="app.js?v=20261016-person-labor-v1"></script>
   <script src="machine-import.js?v=20260930-machine-import-v1"></script>
   <script src="legacy-labor-import.js?v=20261009-legacy-wait-v2"></script>
 </body>
