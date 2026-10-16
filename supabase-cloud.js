@@ -178,6 +178,11 @@
     const {data,error}=await client.rpc('operator_crew_guard_v1');
     return !error&&data===true
   }
+  async function checkOperatorSharedCompletionGuard(){
+    await init();if(!client||!profile?.operator_access)return false;
+    const {data,error}=await client.rpc('operator_shared_completion_guard_v2');
+    return !error&&data===true
+  }
   async function pullOperatorState(){
     await init();if(!client||!profile?.operator_access)return null;emit('syncing');
     const workspace=config.workspaceId||'polat-bakim-main';
@@ -204,5 +209,5 @@
   function onStatus(fn){listeners.add(fn);return()=>listeners.delete(fn)}
   function getInfo(){return{configured,connected:Boolean(client&&profile),profile,version,syncReady,pendingSave:Boolean(saveTimer)||activeSaves>0,pushConfigured:Boolean(config.pushVapidPublicKey),pushEnabled}}
 
-  window.PolatBakimCloud={configured,init,signIn,signInOperator,signInOperatorEmail,listProfiles,manageUser,changeOwnPassword,uploadLayout,downloadLayout,deleteLayout,enableWebPush,disableWebPush,listOwnPushEvents,signOut,pullState,pullOperatorState,pushState,checkLegacyLaborImportGuard,checkOperatorCrewGuard,pushOperatorOrder,queueState,startRealtime,onStatus,getInfo};
+  window.PolatBakimCloud={configured,init,signIn,signInOperator,signInOperatorEmail,listProfiles,manageUser,changeOwnPassword,uploadLayout,downloadLayout,deleteLayout,enableWebPush,disableWebPush,listOwnPushEvents,signOut,pullState,pullOperatorState,pushState,checkLegacyLaborImportGuard,checkOperatorCrewGuard,checkOperatorSharedCompletionGuard,pushOperatorOrder,queueState,startRealtime,onStatus,getInfo};
 })();
