@@ -8,7 +8,7 @@
   <meta name="theme-color" content="#0b8174">
   <link rel="icon" type="image/svg+xml" href="icons/polat-bakim.svg?v=20261001">
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="stylesheet" href="styles.css?v=20261016-shared-completion-v2">
+  <link rel="stylesheet" href="styles.css?v=20261019-completion-submit-v3">
   <link rel="stylesheet" href="fault-catalog.css?v=20260929-time-save">
   <link rel="stylesheet" href="completion-time.css?v=20261002-mobile-correction">
   <link rel="stylesheet" href="avatar-alignment.css?v=20260929-avatar-center">
@@ -500,7 +500,8 @@
       <div class="form-section"><div class="section-heading"><h3>Kullanılan malzemeler</h3><button type="button" class="secondary-btn" id="addPurchasedMaterialBtn">＋ Malzeme Satırı Ekle</button></div><p class="section-help">Operatör yalnızca kullanılan malzeme ve miktarı kaydeder. Fiyatlandırma yönetici onayı sırasında yapılır.</p><div class="purchased-materials" id="purchasedMaterialRows"></div></div>
       <div class="form-section"><div class="section-heading"><h3>Yardımcı personel</h3><span>Her kişi için çalışma ve ara verme süresi kaydedilir</span></div><div class="crew-grid"><fieldset><legend><label><input type="checkbox" name="hasSecond"> İkinci kişi var</label></legend><div class="crew-fields" data-crew="second"><label>İkinci kişi<select name="secondTechnician"></select></label><label>İşe başlama<input type="datetime-local" name="secondStart"></label><label>İş bitirme<input type="datetime-local" name="secondFinish"></label><label>Ara verme<input type="datetime-local" name="secondPauseStart"></label><label>Ara bitirme<input type="datetime-local" name="secondPauseEnd"></label></div></fieldset><fieldset><legend><label><input type="checkbox" name="hasThird"> Üçüncü kişi var</label></legend><div class="crew-fields" data-crew="third"><label>Üçüncü kişi<select name="thirdTechnician"></select></label><label>İşe başlama<input type="datetime-local" name="thirdStart"></label><label>İş bitirme<input type="datetime-local" name="thirdFinish"></label><label>Ara verme<input type="datetime-local" name="thirdPauseStart"></label><label>Ara bitirme<input type="datetime-local" name="thirdPauseEnd"></label></div></fieldset></div></div>
       <div class="form-section"><h3>Ekler ve teyit</h3><div class="downtime-choice"><strong>Duruş var mı? <span aria-hidden="true">*</span></strong><label><input type="radio" name="hasDowntime" value="yes" required> Evet</label><label><input type="radio" name="hasDowntime" value="no" required> Hayır</label></div><div class="form-grid"><label class="full file-field">Fotoğraf / belge ekleri<input type="file" name="attachments" multiple><small>Dosyaların adları iş emrine kaydedilir.</small></label><label class="full confirmation-check"><input required type="checkbox" name="operatorConfirm"><span>Bilgilerin doğru olduğunu teyit ediyor ve işi yönetici onayına gönderiyorum.</span></label></div></div>
-      <div class="modal-actions sticky-actions"><button type="button" class="secondary-btn completion-close">Vazgeç</button><button type="submit" class="primary-btn">✓ Teyit Ver ve Gönder</button></div>
+      <p class="fault-selection-error completion-submit-error hidden" id="completionSubmitError" role="alert"></p>
+      <div class="modal-actions sticky-actions"><button type="button" class="secondary-btn completion-close">Vazgeç</button><button type="submit" class="primary-btn" id="completionSubmitBtn">✓ Teyit Ver ve Gönder</button></div>
     </form>
   </div>
 
@@ -665,10 +666,10 @@
 
   <div class="toast hidden" id="toast"><span>✓</span><p></p></div>
   <script src="supabase-config.js"></script>
-  <script src="supabase-cloud.js?v=20261016-shared-completion-v2"></script>
+  <script src="supabase-cloud.js?v=20261019-completion-submit-v3"></script>
   <script src="vendor/qrcode.min.js"></script>
   <script src="vendor/xlsx.full.min.js"></script>
-  <script src="app.js?v=20261016-shared-completion-v2"></script>
+  <script src="app.js?v=20261019-completion-submit-v3"></script>
   <script src="machine-import.js?v=20260930-machine-import-v1"></script>
   <script src="legacy-labor-import.js?v=20261009-legacy-wait-v2"></script>
 </body>
