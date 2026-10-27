@@ -8,7 +8,7 @@
   <meta name="theme-color" content="#0b8174">
   <link rel="icon" type="image/svg+xml" href="icons/polat-bakim.svg?v=20261001">
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="stylesheet" href="styles.css?v=20261026-operator-close-v9">
+  <link rel="stylesheet" href="styles.css?v=20261027-powerbi-reports-v1">
   <link rel="stylesheet" href="fault-catalog.css?v=20260929-time-save">
   <link rel="stylesheet" href="completion-time.css?v=20261002-mobile-correction">
   <link rel="stylesheet" href="avatar-alignment.css?v=20260929-avatar-center">
@@ -348,16 +348,51 @@
       </section>
 
       <section class="view" id="reportsView">
-        <div class="view-intro"><div><h2>Raporlar &amp; Analiz</h2><p>Bakım performansı, arıza dağılımı ve ekip verimliliği göstergeleri.</p></div><button class="secondary-btn" id="reportExportBtn">⇩ Raporu Dışa Aktar</button></div>
-        <div class="stats-grid" id="reportStats"></div>
-        <div class="dashboard-grid report-grid">
-          <section class="panel"><div class="panel-head"><div><h2>Aylık Bakım Trendi</h2><p>Son 12 ay iş emri ve tamamlanma sayıları</p></div></div><div class="bar-chart" id="reportMonthlyChart"></div></section>
-          <section class="panel"><div class="panel-head"><div><h2>Bakım Türü Dağılımı</h2><p>Arızi, planlı ve diğer işler</p></div></div><div class="type-analysis" id="typeAnalysis"></div></section>
+        <div class="view-intro"><div><h2>Raporlar &amp; Analiz</h2><p>Power BI raporlarının Bakım 360 verileriyle çalışan canlı karşılıkları.</p></div><button class="secondary-btn" id="reportExportBtn">⇩ Aktif Raporu Dışa Aktar</button></div>
+        <div class="report-tabs" id="reportTabs" role="tablist" aria-label="Bakım raporları">
+          <button type="button" class="active" data-report-tab="tracking" role="tab" aria-selected="true">Takip Raporu</button>
+          <button type="button" data-report-tab="completeness" role="tab" aria-selected="false">Alan Doluluk Oranları</button>
+          <button type="button" data-report-tab="affiliate" role="tab" aria-selected="false">İştirak Şirket Yüzdelik</button>
+          <button type="button" data-report-tab="failures" role="tab" aria-selected="false">Arıza Sayıları</button>
         </div>
-        <div class="dashboard-grid report-grid lower-report-grid">
-          <section class="panel"><div class="panel-head"><div><h2>En Çok Bakım Gören Varlıklar</h2><p>Toplam iş emri sayısına göre</p></div></div><div class="ranking-list" id="assetRanking"></div></section>
-          <section class="panel"><div class="panel-head"><div><h2>Personel Performansı</h2><p>Tamamlanan işler ve ortalama müdahale süresi</p></div></div><div class="table-wrap"><table><thead><tr><th>Personel</th><th>Tamamlanan</th><th>Aktif</th><th>Ort. Süre</th></tr></thead><tbody id="performanceTable"></tbody></table></div></section>
-        </div>
+        <section class="panel report-filter-panel" aria-label="Rapor filtreleri">
+          <label>Başlangıç<input type="date" id="reportDateFrom"></label>
+          <label>Bitiş<input type="date" id="reportDateTo"></label>
+          <label>Personel<select id="reportPersonFilter"><option value="">Tüm Personel</option></select></label>
+          <label class="report-search"><span>Arama</span><input type="search" id="reportSearch" placeholder="İş, bildirim, PT no veya ekipman ara"></label>
+          <button type="button" class="secondary-btn" id="reportClearFilters">Süzgeçleri Temizle</button>
+        </section>
+
+        <section class="report-panel" data-report-panel="tracking" role="tabpanel">
+          <div class="stats-grid report-kpis" id="trackingReportStats"></div>
+          <section class="panel report-data-panel"><div class="panel-head"><div><h2>Personel Çalışma Takibi</h2><p>İşe başlama, bitirme, ara ve net çalışma süreleri</p></div><span class="source-pill" id="trackingReportCount">0 kayıt</span></div><div class="table-wrap report-table-wrap"><table class="report-table"><thead><tr><th>Kişi</th><th>İşin Tanımı</th><th>Bildirim No</th><th>İşe Başlama</th><th>İşi Bitirme</th><th>Ara Başlangıç</th><th>Ara Bitiş</th><th>Süre (DK)</th></tr></thead><tbody id="trackingReportBody"></tbody></table></div></section>
+        </section>
+
+        <section class="report-panel hidden" data-report-panel="completeness" role="tabpanel">
+          <div class="stats-grid report-kpis" id="completenessStats"></div>
+          <div class="report-two-column">
+            <section class="panel report-data-panel"><div class="panel-head"><div><h2>Alan Bazında Doluluk</h2><p>Elektrik ve mekanik arıza kayıtlarındaki zorunlu alanlar</p></div></div><div class="table-wrap"><table class="report-table"><thead><tr><th>İncelenen Alan</th><th>Toplam Kayıt</th><th>Dolu Kayıt</th><th>Doluluk Oranı</th></tr></thead><tbody id="completenessReportBody"></tbody></table></div></section>
+            <section class="panel report-data-panel"><div class="panel-head"><div><h2>Doluluk Görünümü</h2><p>Alan gruplarının anlık kalite özeti</p></div></div><div class="completeness-rings" id="completenessRings"></div></section>
+          </div>
+        </section>
+
+        <section class="report-panel hidden" data-report-panel="affiliate" role="tabpanel">
+          <div class="stats-grid report-kpis" id="affiliateStats"></div>
+          <div class="report-two-column affiliate-report-grid">
+            <section class="panel report-data-panel"><div class="panel-head"><div><h2>Masraf Yeri Dağılımı</h2><p>Toplam çalışma süresinin iştirak ve masraf yerlerine oranı</p></div></div><div class="report-share-list" id="affiliateShareList"></div></section>
+            <section class="panel report-data-panel"><div class="panel-head"><div><h2>Kişi × Masraf Yeri</h2><p>Personel çalışma sürelerinin yüzdelik matrisi</p></div></div><div class="table-wrap affiliate-matrix-wrap"><table class="report-table matrix-table"><thead id="affiliateMatrixHead"></thead><tbody id="affiliateMatrixBody"></tbody></table></div></section>
+          </div>
+          <section class="panel report-data-panel"><div class="panel-head"><div><h2>İştirak Çalışma Detayı</h2><p>Kişi, masraf yeri ve iş tanımına göre net süre</p></div><span class="source-pill" id="affiliateDetailCount">0 kayıt</span></div><div class="table-wrap report-table-wrap"><table class="report-table"><thead><tr><th>Kişi</th><th>Masraf Yeri</th><th>İşin Tanımı</th><th>Süre (SA)</th></tr></thead><tbody id="affiliateDetailBody"></tbody></table></div></section>
+        </section>
+
+        <section class="report-panel hidden" data-report-panel="failures" role="tabpanel">
+          <div class="stats-grid report-kpis" id="failureStats"></div>
+          <div class="report-two-column failure-report-grid">
+            <section class="panel report-data-panel"><div class="panel-head"><div><h2>Ekipman Bazında Arıza Sayısı</h2><p>PT numarası ve ekipmana göre arıza yoğunluğu</p></div></div><div class="ranking-list" id="failureAssetRanking"></div></section>
+            <section class="panel report-data-panel"><div class="panel-head"><div><h2>Bakım Branşı Dağılımı</h2><p>Elektrik ve mekanik arıza bildirimleri</p></div></div><div class="report-donut-layout"><div class="report-donut" id="failureBranchDonut"><span>0</span></div><div class="report-legend" id="failureBranchLegend"></div></div></section>
+          </div>
+          <section class="panel report-data-panel"><div class="panel-head"><div><h2>Arıza Tanımı Sayıları</h2><p>İş tanımına göre tekrar eden arızalar</p></div><span class="source-pill" id="failureTitleCount">0 tanım</span></div><div class="report-failure-bars" id="failureTitleBars"></div></section>
+        </section>
       </section>
     </main>
   </div>
@@ -669,7 +704,7 @@
   <script src="supabase-cloud.js?v=20261026-operator-close-v9"></script>
   <script src="vendor/qrcode.min.js"></script>
   <script src="vendor/xlsx.full.min.js"></script>
-  <script src="app.js?v=20261026-operator-close-v9"></script>
+  <script src="app.js?v=20261027-powerbi-reports-v1"></script>
   <script src="machine-import.js?v=20260930-machine-import-v1"></script>
   <script src="legacy-labor-import.js?v=20261009-legacy-wait-v2"></script>
 </body>
