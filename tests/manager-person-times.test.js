@@ -15,6 +15,7 @@ const context = vm.createContext({
   manualFactoryScheduleOverlapMinutes: () => 0,
 })
 vm.runInContext(app.slice(app.indexOf('function operatorClock('), app.indexOf('function operatorCanAddPerson(')), context)
+vm.runInContext(app.slice(app.indexOf('function laborIntervalMetrics('), app.indexOf('function finishOperatorClocks(')), context)
 vm.runInContext(app.slice(app.indexOf('function validateManagerPersonTimes('), app.indexOf('function managerPauseEditorRow(')), context)
 
 test('atanmış iki kişi, yalnızca bir işçilik satırı bulunsa da ayrı ayrı hazırlanır', () => {
