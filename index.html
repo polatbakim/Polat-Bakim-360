@@ -8,7 +8,7 @@
   <meta name="theme-color" content="#0b8174">
   <link rel="icon" type="image/svg+xml" href="icons/polat-bakim.svg?v=20261001">
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="stylesheet" href="styles.css?v=20261027-powerbi-reports-v1">
+  <link rel="stylesheet" href="styles.css?v=20261102-manager-add-labor-v2">
   <link rel="stylesheet" href="fault-catalog.css?v=20260929-time-save">
   <link rel="stylesheet" href="completion-time.css?v=20261002-mobile-correction">
   <link rel="stylesheet" href="avatar-alignment.css?v=20260929-avatar-center">
@@ -564,7 +564,7 @@
         <div class="section-heading"><div><h3>MTTR / MTBF hesap kapsamı</h3><span id="managerReliabilityScopeStatus">Firma dışı veya güvenilirlik hesabını etkilememesi gereken işleri ayrı ayrı hariç tutun.</span></div></div>
         <div class="manager-reliability-scope"><label><input type="checkbox" name="includeInMttr" checked><span><b>MTTR hesabına dahil et</b><small>Net onarım süresi ve arıza adedi ortalamaya katılır.</small></span></label><label><input type="checkbox" name="includeInMtbf" checked><span><b>MTBF hesabına dahil et</b><small>Arıza, arızalar arası çalışma hesabına katılır.</small></span></label><label class="manager-reliability-reason">Hariç tutma nedeni<input name="reliabilityExclusionReason" placeholder="Örn. Firma dışında yapılan iş"></label></div>
       </div>
-      <div class="form-section"><div class="section-heading"><h3>İşçilik maliyeti ve kişi süreleri</h3><span>Her personelin saatleri, ara süresi ve saatlik ücreti düzenlenebilir</span></div><div class="manager-labor-list" id="managerLaborRows"></div><div class="manager-subtotal"><span>Toplam işçilik maliyeti</span><b id="managerLaborTotal">₺0</b></div></div>
+      <div class="form-section manager-labor-section"><div class="section-heading"><div><h3>İşçilik maliyeti ve kişi süreleri</h3><span>Her personelin saatleri, ara süresi ve saatlik ücreti düzenlenebilir</span></div><button type="button" class="secondary-btn" id="managerAddLaborBtn">＋ Personel Ekle</button></div><div class="manager-labor-add hidden" id="managerLaborAddPanel"><label>Unutulan personel<select id="managerLaborTechnicianSelect"><option value="">Personel seçin</option></select></label><div><button type="button" class="secondary-btn" id="managerCancelAddLaborBtn">Vazgeç</button><button type="button" class="primary-btn" id="managerConfirmAddLaborBtn">Personeli Ekle</button></div></div><div class="manager-labor-list" id="managerLaborRows"></div><div class="manager-subtotal"><span>Toplam işçilik maliyeti</span><b id="managerLaborTotal">₺0</b></div></div>
       <div class="form-section"><div class="section-heading"><div><h3>Malzeme maliyeti</h3><span>Stoktan seçin veya stok dışı malzemeyi elle girin</span></div><button type="button" class="secondary-btn" id="managerAddMaterialBtn">＋ Stok Dışı Ekle</button></div><div class="manager-stock-add"><label for="managerStockMaterialSelect">Stoktan ekle</label><div><select id="managerStockMaterialSelect" aria-label="Stok malzemesi seçin"><option value="">Stok kartı seçin</option></select><button type="button" class="secondary-btn" id="managerAddStockMaterialBtn">＋ Stoktan Ekle</button></div></div><div class="manager-material-list" id="managerMaterialRows"></div><div class="manager-subtotal"><span>Toplam malzeme maliyeti</span><b id="managerMaterialTotal">₺0</b></div></div>
       <div class="form-section"><h3>Diğer maliyetler</h3><div class="form-grid"><label>Dış hizmet maliyeti (₺)<input type="number" min="0" step="0.01" name="serviceCost" value="0"></label><label>Diğer maliyet (₺)<input type="number" min="0" step="0.01" name="otherCost" value="0"></label></div><div class="manager-grand-total"><span>Genel iş emri maliyeti</span><b id="managerGrandTotal">₺0</b><small>İşçilik + malzeme + dış hizmet + diğer</small></div></div>
       <div class="modal-actions sticky-actions"><button type="button" class="secondary-btn" id="managerReturnBtn">Düzeltme İste</button><button type="submit" class="primary-btn">✓ Maliyetleri Onayla ve İşi Kapat</button></div>
@@ -701,10 +701,10 @@
 
   <div class="toast hidden" id="toast"><span>✓</span><p></p></div>
   <script src="supabase-config.js"></script>
-  <script src="supabase-cloud.js?v=20261026-operator-close-v9"></script>
+  <script src="supabase-cloud.js?v=20261102-manager-add-labor-v2"></script>
   <script src="vendor/qrcode.min.js"></script>
   <script src="vendor/xlsx.full.min.js"></script>
-  <script src="app.js?v=20261030-net-labor-v1"></script>
+  <script src="app.js?v=20261102-manager-add-labor-v2"></script>
   <script src="machine-import.js?v=20260930-machine-import-v1"></script>
   <script src="legacy-labor-import.js?v=20261009-legacy-wait-v2"></script>
 </body>
