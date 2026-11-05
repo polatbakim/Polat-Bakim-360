@@ -8,7 +8,7 @@
   <meta name="theme-color" content="#0b8174">
   <link rel="icon" type="image/svg+xml" href="icons/polat-bakim.svg?v=20261001">
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="stylesheet" href="styles.css?v=20261105-shared-waiting-v2">
+  <link rel="stylesheet" href="styles.css?v=20261105-completion-fix-v1">
   <link rel="stylesheet" href="fault-catalog.css?v=20260929-time-save">
   <link rel="stylesheet" href="completion-time.css?v=20261002-mobile-correction">
   <link rel="stylesheet" href="avatar-alignment.css?v=20260929-avatar-center">
@@ -207,6 +207,7 @@
             <div class="operator-session"><span class="avatar" id="operatorSessionAvatar">—</span><div><small>OTURUM AÇIK</small><strong id="operatorSessionName">Operatör</strong><span id="operatorSessionRole"></span></div><button type="button" class="operator-inbox-btn" id="operatorInboxBtn" aria-haspopup="dialog">🔔 Bildirimler</button><button type="button" class="operator-notification-btn" id="operatorNotificationBtn">🔔 Bildirimleri Aç</button><button type="button" id="operatorLogoutBtn">Çıkış</button></div>
           </div>
           <div class="operator-stats" id="operatorStats"></div>
+          <div class="operator-admin-control hidden" id="adminOperatorControl"><label><span>İŞLEM YAPILACAK PERSONEL</span><select id="adminOperatorTechSelect"><option value="">Personel seçin</option></select></label><small>Başlatma, bekletme ve bitirme kayıtları seçilen personelin işçiliğine yazılır.</small></div>
           <div class="operator-toolbar"><div class="operator-tabs" id="operatorTabs"><button class="active" data-operator-status="">Tümü</button><button data-operator-status="Atandı">Yeni Atanan</button><button data-operator-status="Devam Ediyor">Devam Eden</button><button data-operator-status="Beklemede">Beklemede</button><button data-operator-status="Teyit Bekliyor">Teyit Bekleyen</button><button data-operator-status="Tamamlandı">Tamamlanan</button></div><label class="search-box operator-search"><span>⌕</span><input id="operatorSearch" type="search" placeholder="İş emri veya ekipman ara"></label></div>
           <div class="operator-layout"><section><div class="operator-work-list" id="operatorWorkList"></div><div class="empty-state hidden" id="operatorEmpty"><span>✓</span><h3>Bu bölümde iş emri yok</h3><p>Atanan yeni işler burada görüntülenecek.</p></div></section><aside class="operator-guide"><span class="guide-icon">✓</span><h3>Saha iş akışı</h3><ol><li>Atanan işi ve ekipmanı kontrol edin.</li><li><strong>İşe Başla</strong> ile başlangıç saatini kaydedin.</li><li>Arıza ve yapılan işlem bilgilerini doldurun.</li><li>İşi yönetici teyidine gönderin.</li></ol><p>Yönetici teyit verdiğinde iş emri otomatik kapanır.</p></aside></div>
         </div>
@@ -701,10 +702,10 @@
 
   <div class="toast hidden" id="toast"><span>✓</span><p></p></div>
   <script src="supabase-config.js"></script>
-  <script src="supabase-cloud.js?v=20261105-shared-waiting-v2"></script>
+  <script src="supabase-cloud.js?v=20261105-completion-fix-v1"></script>
   <script src="vendor/qrcode.min.js"></script>
   <script src="vendor/xlsx.full.min.js"></script>
-  <script src="app.js?v=20261105-shared-waiting-v2"></script>
+  <script src="app.js?v=20261105-completion-fix-v1"></script>
   <script src="machine-import.js?v=20260930-machine-import-v1"></script>
   <script src="legacy-labor-import.js?v=20261009-legacy-wait-v2"></script>
 </body>
