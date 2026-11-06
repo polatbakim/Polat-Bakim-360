@@ -185,7 +185,7 @@
   }
   async function checkOperatorIndividualLaborGuard(){
     await init();if(!client||!profile?.operator_access)return false;
-    const {data,error}=await client.rpc('operator_individual_labor_guard_v3');
+    const {data,error}=await client.rpc('operator_individual_labor_guard_v4');
     return !error&&data===true
   }
   async function pullOperatorState(){
