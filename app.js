@@ -958,6 +958,7 @@ function openDeleteAllOrdersModal(){
 }
 function closeDeleteAllOrdersModal(){$('#deleteAllOrdersModal').classList.add('hidden');$('#deleteAllOrdersForm').reset();$('#confirmDeleteAllOrdersBtn').disabled=true}
 
+function operatorStatusMatches(order,status=operatorStatus){return status?order?.status===status:['Atandı','Devam Ediyor','Beklemede'].includes(order?.status)}
 function renderOperator(){
   const techSelect=$('#operatorTechSelect');if(!techSelect)return;
   const people=operatorLoginUsers();techSelect.innerHTML='<option value="">Adınızı seçin</option>'+people.map(t=>`<option value="${t.id}">${escapeHtml(t.name)} · ${escapeHtml(t.role)}</option>`).join('');
@@ -973,7 +974,7 @@ function renderOperator(){
   $('#operatorSessionAvatar').textContent=managerPreview?'◆':activeTech.initials||'—';$('#operatorSessionName').textContent=adminControl?'Admin Saha Kontrolü':managerPreview?'Tüm Operatörler':activeTech.name;$('#operatorSessionRole').textContent=adminControl?(activeTech?`${activeTech.name} adına işlem yapılıyor`:'İşlem için personel seçin'):managerPreview?'Yönetici izleme görünümü':activeTech.role;$('#operatorLogoutBtn').classList.toggle('hidden',managerPreview);updateOperatorNotificationButton();
   const q=($('#operatorSearch')?.value||'').trim().toLocaleLowerCase('tr-TR');
   const assigned=state.orders.filter(o=>isWorkOrder(o)&&(managerPreview&&(!adminControl||!actingId)||operatorCanSeeOrder(o,actingId))).sort((a,b)=>new Date(b.updatedAt||b.createdAt)-new Date(a.updatedAt||a.createdAt));
-  const visible=assigned.filter(o=>(!operatorStatus||o.status===operatorStatus)&&(!q||[o.id,o.title,o.location,assetById(o.assetId).name,o.notificationNo,o.ptNo].join(' ').toLocaleLowerCase('tr-TR').includes(q)));
+  const visible=assigned.filter(o=>operatorStatusMatches(o)&&(!q||[o.id,o.title,o.location,assetById(o.assetId).name,o.notificationNo,o.ptNo].join(' ').toLocaleLowerCase('tr-TR').includes(q)));
   const statItems=[['Yeni Atanan',assigned.filter(o=>o.status==='Atandı').length,'Atandı','↓'],['Devam Eden',assigned.filter(o=>o.status==='Devam Ediyor').length,'Devam Ediyor','▶'],['Beklemede',assigned.filter(o=>o.status==='Beklemede').length,'Beklemede','Ⅱ'],['Teyit Bekleyen',assigned.filter(o=>o.status==='Teyit Bekliyor').length,'Teyit Bekliyor','✓'],['Tamamlanan',assigned.filter(o=>o.status==='Tamamlandı').length,'Tamamlandı','✓']];
   $('#operatorStats').innerHTML=statItems.map(x=>`<button type="button" data-operator-filter="${x[2]}" class="operator-stat ${operatorStatus===x[2]?'active':''}"><span>${x[3]}</span><div><b>${x[1]}</b><small>${x[0]}</small></div></button>`).join('');
   $('#operatorWorkList').innerHTML=visible.map(o=>operatorCard(o,!managerPreview||adminControl&&!!actingId,actingId,adminControl)).join('');$('#operatorEmpty').classList.toggle('hidden',visible.length>0);
