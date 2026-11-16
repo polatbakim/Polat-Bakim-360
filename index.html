@@ -8,7 +8,7 @@
   <meta name="theme-color" content="#0b8174">
   <link rel="icon" type="image/svg+xml" href="icons/polat-bakim.svg?v=20261001">
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="stylesheet" href="styles.css?v=20261112-operator-all-active-v12">
+  <link rel="stylesheet" href="styles.css?v=20261116-management-tracking-v13">
   <link rel="stylesheet" href="fault-catalog.css?v=20260929-time-save">
   <link rel="stylesheet" href="completion-time.css?v=20261002-mobile-correction">
   <link rel="stylesheet" href="avatar-alignment.css?v=20260929-avatar-center">
@@ -114,6 +114,11 @@
         </div>
         <div class="stats-grid" id="statsGrid"></div>
 
+        <section class="panel management-tracking-panel">
+          <div class="panel-head"><div><h2>Yönetim Bekleyenleri</h2><p>İşçilik tamamlansa bile devam eden arıza, servis, parça, satın alma ve onay süreçleri</p></div><button class="panel-action" data-management-drill="__TRACKING__">Tümünü aç →</button></div>
+          <div class="management-tracking-summary" id="managementTrackingSummary"></div>
+        </section>
+
         <section class="panel follow-up-panel">
           <div class="panel-head"><div><h2>Takip Edilecek Konular</h2><p>Aranacak kişiler, görüşülecek işler, termin ve onay takipleri</p></div><div class="follow-up-head-actions"><select id="followUpOwnerFilter" aria-label="Sorumlu yönetici filtresi"></select><select id="followUpStatusFilter" aria-label="Takip durumu filtresi"><option value="open">Açık Takipler</option><option value="all">Tümü</option><option value="completed">Tamamlananlar</option></select><button class="primary-btn" id="addFollowUpBtn">＋ Takip Ekle</button></div></div>
           <div class="follow-up-summary" id="followUpSummary"></div>
@@ -183,8 +188,8 @@
         <div class="order-tabs" id="orderTabs"><button class="active" data-status="">Tümü <span id="tabAll">0</span></button><button data-status="Bekliyor">Atama Yapılmadı <span id="tabWaiting">0</span></button><button data-status="Atandı">Atandı <span id="tabAssigned">0</span></button><button data-status="Devam Ediyor">Devam Eden <span id="tabProgress">0</span></button><button data-status="Beklemede">Beklemede <span id="tabHold">0</span></button><button data-status="Teyit Bekliyor">Teyit Bekleyen <span id="tabConfirmation">0</span></button><button data-status="Tamamlandı">Tamamlanan <span id="tabDone">0</span></button></div>
         <div class="panel">
           <div class="active-filter-bar hidden" id="activeFilterBar"><div><span>ETKİLEŞİMLİ SÜZME</span><strong id="activeFilterLabel"></strong><small id="activeFilterInfo"></small></div><button id="clearDrillBtn">Filtreyi Temizle ×</button></div>
-          <div class="table-toolbar"><label class="search-box"><span>⌕</span><input id="orderSearch" type="search" placeholder="İş emri, ekipman veya personel ara"></label><select id="priorityFilter"><option value="">Tüm öncelikler</option><option>Acil</option><option>Yüksek</option><option>Orta</option><option>Düşük</option></select><select id="typeFilter"><option value="">Tüm bakım türleri</option></select><span class="source-pill" id="sourcePill">Bakım Form.csv</span></div>
-          <div class="table-wrap"><table><thead><tr><th>İş Emri</th><th>İş Tanımı</th><th>Makine / Konum</th><th>Sorumlu</th><th>Tarih</th><th>Öncelik</th><th>Maliyet</th><th>Durum</th><th></th></tr></thead><tbody id="allOrders"></tbody></table></div>
+          <div class="table-toolbar"><label class="search-box"><span>⌕</span><input id="orderSearch" type="search" placeholder="İş emri, ekipman veya personel ara"></label><select id="priorityFilter"><option value="">Tüm öncelikler</option><option>Acil</option><option>Yüksek</option><option>Orta</option><option>Düşük</option></select><select id="typeFilter"><option value="">Tüm bakım türleri</option></select><select id="orderManagementFilter"><option value="">Tüm yönetim durumları</option><option value="__TRACKING__">Yönetim takibindekiler</option></select><span class="source-pill" id="sourcePill">Bakım Form.csv</span></div>
+          <div class="table-wrap"><table><thead><tr><th>İş Emri</th><th>İş Tanımı</th><th>Makine / Konum</th><th>Sorumlu</th><th>Tarih</th><th>Öncelik</th><th>Maliyet</th><th>İş Durumu</th><th>Yönetim Takibi</th><th></th></tr></thead><tbody id="allOrders"></tbody></table></div>
           <div class="load-more-wrap hidden" id="loadMoreWrap"><button class="secondary-btn" id="loadMoreBtn">Daha fazla kayıt göster</button></div>
           <div class="empty-state hidden" id="ordersEmpty"><span>⌕</span><h3>Kayıt bulunamadı</h3><p>Filtreleri değiştirin veya yeni bir iş emri oluşturun.</p></div>
         </div>
@@ -565,6 +570,7 @@
         <div class="section-heading"><div><h3>MTTR / MTBF hesap kapsamı</h3><span id="managerReliabilityScopeStatus">Firma dışı veya güvenilirlik hesabını etkilememesi gereken işleri ayrı ayrı hariç tutun.</span></div></div>
         <div class="manager-reliability-scope"><label><input type="checkbox" name="includeInMttr" checked><span><b>MTTR hesabına dahil et</b><small>Net onarım süresi ve arıza adedi ortalamaya katılır.</small></span></label><label><input type="checkbox" name="includeInMtbf" checked><span><b>MTBF hesabına dahil et</b><small>Arıza, arızalar arası çalışma hesabına katılır.</small></span></label><label class="manager-reliability-reason">Hariç tutma nedeni<input name="reliabilityExclusionReason" placeholder="Örn. Firma dışında yapılan iş"></label></div>
       </div>
+      <div class="form-section manager-resolution-section"><div class="section-heading"><div><h3>İşçilik Sonucu ve Arıza Takibi</h3><span>İşçilik kapanabilir; arıza servis, parça, satın alma veya onay beklediği için yönetim takibinde açık kalabilir.</span></div></div><div class="management-resolution-hint" id="managerResolutionHint"></div><div class="form-grid"><label>Arıza kapanış tarihi<input type="datetime-local" name="managerFaultClosedAt"><span class="subtext">Tarih girilirse arıza kapanır; boşsa yönetim takibi açık kalır.</span></label><label data-manager-tracking-field>Yönetim durumu<select name="managerManagementStatus"></select></label><label data-manager-tracking-field>Sorumlu yönetici<select name="managerManagementOwnerId"></select></label><label data-manager-tracking-field>Takip tarihi<input type="datetime-local" name="managerManagementDueAt"></label><label class="full" data-manager-tracking-field>Yönetim notu<textarea name="managerManagementNote" rows="3" placeholder="Beklenen parça, servis firması, onay veya sonraki adımı yazın..."></textarea></label></div></div>
       <div class="form-section manager-labor-section"><div class="section-heading"><div><h3>İşçilik maliyeti ve kişi süreleri</h3><span>Her personelin saatleri, ara süresi ve saatlik ücreti düzenlenebilir</span></div><button type="button" class="secondary-btn" id="managerAddLaborBtn">＋ Personel Ekle</button></div><div class="manager-labor-add hidden" id="managerLaborAddPanel"><label>Unutulan personel<select id="managerLaborTechnicianSelect"><option value="">Personel seçin</option></select></label><div><button type="button" class="secondary-btn" id="managerCancelAddLaborBtn">Vazgeç</button><button type="button" class="primary-btn" id="managerConfirmAddLaborBtn">Personeli Ekle</button></div></div><div class="manager-labor-list" id="managerLaborRows"></div><div class="manager-subtotal"><span>Toplam işçilik maliyeti</span><b id="managerLaborTotal">₺0</b></div></div>
       <div class="form-section"><div class="section-heading"><div><h3>Malzeme maliyeti</h3><span>Stoktan seçin veya stok dışı malzemeyi elle girin</span></div><button type="button" class="secondary-btn" id="managerAddMaterialBtn">＋ Stok Dışı Ekle</button></div><div class="manager-stock-add"><label for="managerStockMaterialSelect">Stoktan ekle</label><div><select id="managerStockMaterialSelect" aria-label="Stok malzemesi seçin"><option value="">Stok kartı seçin</option></select><button type="button" class="secondary-btn" id="managerAddStockMaterialBtn">＋ Stoktan Ekle</button></div></div><div class="manager-material-list" id="managerMaterialRows"></div><div class="manager-subtotal"><span>Toplam malzeme maliyeti</span><b id="managerMaterialTotal">₺0</b></div></div>
       <div class="form-section"><h3>Diğer maliyetler</h3><div class="form-grid"><label>Dış hizmet maliyeti (₺)<input type="number" min="0" step="0.01" name="serviceCost" value="0"></label><label>Diğer maliyet (₺)<input type="number" min="0" step="0.01" name="otherCost" value="0"></label></div><div class="manager-grand-total"><span>Genel iş emri maliyeti</span><b id="managerGrandTotal">₺0</b><small>İşçilik + malzeme + dış hizmet + diğer</small></div></div>
@@ -703,10 +709,10 @@
 
   <div class="toast hidden" id="toast"><span>✓</span><p></p></div>
   <script src="supabase-config.js"></script>
-  <script src="supabase-cloud.js?v=20261112-operator-all-active-v12"></script>
+  <script src="supabase-cloud.js?v=20261116-management-tracking-v13"></script>
   <script src="vendor/qrcode.min.js"></script>
   <script src="vendor/xlsx.full.min.js"></script>
-  <script src="app.js?v=20261112-operator-all-active-v12"></script>
+  <script src="app.js?v=20261116-management-tracking-v13"></script>
   <script src="machine-import.js?v=20260930-machine-import-v1"></script>
   <script src="legacy-labor-import.js?v=20261009-legacy-wait-v2"></script>
 </body>
