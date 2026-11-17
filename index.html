@@ -8,7 +8,7 @@
   <meta name="theme-color" content="#0b8174">
   <link rel="icon" type="image/svg+xml" href="icons/polat-bakim.svg?v=20261001">
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="stylesheet" href="styles.css?v=20261117-follow-up-assign-v16">
+  <link rel="stylesheet" href="styles.css?v=20261117-mttr-report-v18">
   <link rel="stylesheet" href="fault-catalog.css?v=20260929-time-save">
   <link rel="stylesheet" href="completion-time.css?v=20261002-mobile-correction">
   <link rel="stylesheet" href="avatar-alignment.css?v=20260929-avatar-center">
@@ -360,10 +360,11 @@
           <button type="button" data-report-tab="completeness" role="tab" aria-selected="false">Alan Doluluk Oranları</button>
           <button type="button" data-report-tab="affiliate" role="tab" aria-selected="false">İştirak Şirket Yüzdelik</button>
           <button type="button" data-report-tab="failures" role="tab" aria-selected="false">Arıza Sayıları</button>
+          <button type="button" data-report-tab="mttr" role="tab" aria-selected="false">MTTR Raporu</button>
         </div>
         <section class="panel report-filter-panel" aria-label="Rapor filtreleri">
-          <label>Başlangıç<input type="date" id="reportDateFrom"></label>
-          <label>Bitiş<input type="date" id="reportDateTo"></label>
+          <label data-report-date-filter>Başlangıç<input type="date" id="reportDateFrom"></label>
+          <label data-report-date-filter>Bitiş<input type="date" id="reportDateTo"></label>
           <label>Personel<select id="reportPersonFilter"><option value="">Tüm Personel</option></select></label>
           <label class="report-search"><span>Arama</span><input type="search" id="reportSearch" placeholder="İş, bildirim, PT no veya ekipman ara"></label>
           <button type="button" class="secondary-btn" id="reportClearFilters">Süzgeçleri Temizle</button>
@@ -398,6 +399,20 @@
             <section class="panel report-data-panel"><div class="panel-head"><div><h2>Bakım Branşı Dağılımı</h2><p>Elektrik ve mekanik arıza bildirimleri</p></div></div><div class="report-donut-layout"><div class="report-donut" id="failureBranchDonut"><span>0</span></div><div class="report-legend" id="failureBranchLegend"></div></div></section>
           </div>
           <section class="panel report-data-panel"><div class="panel-head"><div><h2>Arıza Tanımı Sayıları</h2><p>İş tanımına göre tekrar eden arızalar</p></div><span class="source-pill" id="failureTitleCount">0 tanım</span></div><div class="report-failure-bars" id="failureTitleBars"></div></section>
+        </section>
+
+        <section class="report-panel hidden" data-report-panel="mttr" role="tabpanel">
+          <section class="panel mttr-period-panel" aria-label="MTTR dönem filtreleri">
+            <div><span>MTTR HESAP KURALI</span><strong>Her tamamlanan arıza için en uzun personel net süresi alınır; personel süreleri toplanmaz.</strong></div>
+            <label>Yıl<select id="mttrYearFilter"></select></label>
+            <label>Ay<select id="mttrMonthFilter"><option value="">Tüm Yıl</option><option value="01">Ocak</option><option value="02">Şubat</option><option value="03">Mart</option><option value="04">Nisan</option><option value="05">Mayıs</option><option value="06">Haziran</option><option value="07">Temmuz</option><option value="08">Ağustos</option><option value="09">Eylül</option><option value="10">Ekim</option><option value="11">Kasım</option><option value="12">Aralık</option></select></label>
+          </section>
+          <div class="stats-grid report-kpis" id="mttrStats"></div>
+          <div class="report-two-column mttr-report-grid">
+            <section class="panel report-data-panel"><div class="panel-head"><div><h2>Aylık MTTR Eğilimi</h2><p>Seçili yıl içinde ay bazında ortalama onarım süresi</p></div></div><div class="mttr-monthly-bars" id="mttrMonthlyBars"></div></section>
+            <section class="panel report-data-panel mttr-formula-card"><div class="panel-head"><div><h2>Hesaplama Yöntemi</h2><p>Arıza başına tek süre kullanılır</p></div></div><div class="mttr-formula"><b>MTTR = Σ (iş emrindeki en uzun net personel süresi) ÷ tamamlanan arıza adedi</b><span>Yalnızca “Tamamlandı” durumundaki, arıza kapanışı yapılmış ve “MTTR hesabına dahil et” seçili iş emirleri hesaplanır.</span><span>Örnek: Aynı işte 120 dk ve 75 dk çalışan iki kişi varsa hesaplamaya 120 dk girer.</span></div></section>
+          </div>
+          <section class="panel report-data-panel"><div class="panel-head"><div><h2>MTTR Arıza Detayı</h2><p>Her iş emrindeki en uzun net işçilik süresi</p></div><span class="source-pill" id="mttrReportCount">0 arıza</span></div><div class="table-wrap report-table-wrap"><table class="report-table"><thead><tr><th>Tamamlanma</th><th>İş Emri / Arıza</th><th>Ekipman</th><th>En Uzun Çalışan Personel</th><th>Personel Sayısı</th><th>MTTR'ye Giren Net Süre (DK)</th></tr></thead><tbody id="mttrReportBody"></tbody></table></div></section>
         </section>
       </section>
     </main>
@@ -710,10 +725,10 @@
 
   <div class="toast hidden" id="toast"><span>✓</span><p></p></div>
   <script src="supabase-config.js"></script>
-  <script src="supabase-cloud.js?v=20261117-follow-up-assign-v16"></script>
+  <script src="supabase-cloud.js?v=20261117-notification-order-no-v17"></script>
   <script src="vendor/qrcode.min.js"></script>
   <script src="vendor/xlsx.full.min.js"></script>
-  <script src="app.js?v=20261117-follow-up-assign-v16"></script>
+  <script src="app.js?v=20261117-mttr-report-v18"></script>
   <script src="machine-import.js?v=20260930-machine-import-v1"></script>
   <script src="legacy-labor-import.js?v=20261009-legacy-wait-v2"></script>
 </body>
