@@ -8,7 +8,7 @@
   <meta name="theme-color" content="#0b8174">
   <link rel="icon" type="image/svg+xml" href="icons/polat-bakim.svg?v=20261001">
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="stylesheet" href="styles.css?v=20261117-mttr-report-v18">
+  <link rel="stylesheet" href="styles.css?v=20261117-request-dashboard-mttr-v19">
   <link rel="stylesheet" href="fault-catalog.css?v=20260929-time-save">
   <link rel="stylesheet" href="completion-time.css?v=20261002-mobile-correction">
   <link rel="stylesheet" href="avatar-alignment.css?v=20260929-avatar-center">
@@ -108,12 +108,6 @@
       <section class="view" id="noAccessView"><div class="panel form-section"><h2>Sayfa erişimi tanımlı değil</h2><p>Bu yönetici hesabı için Admin Yönetici tarafından görülebilecek sayfalar seçilmelidir.</p></div></section>
 
       <section class="view active" id="dashboardView">
-        <div class="welcome-row">
-          <div><h2>Bakım operasyon özeti</h2><p id="todayText"></p></div>
-          <div class="period-control"><button class="active">Bugün</button><button>Bu Hafta</button><button>Bu Ay</button></div>
-        </div>
-        <div class="stats-grid" id="statsGrid"></div>
-
         <section class="panel management-tracking-panel">
           <div class="panel-head"><div><h2>Yönetim Bekleyenleri</h2><p>İşçilik tamamlansa bile devam eden arıza, servis, parça, satın alma ve onay süreçleri</p></div><button class="panel-action" data-management-drill="__TRACKING__">Tümünü aç →</button></div>
           <div class="management-tracking-summary" id="managementTrackingSummary"></div>
@@ -126,38 +120,6 @@
           <div class="empty-state hidden" id="followUpEmpty"><span>✓</span><h3>Takip edilecek konu yok</h3><p>Aranacak, görüşülecek veya termin alınacak konuları buraya ekleyin.</p></div>
         </section>
 
-        <section class="panel monthly-capacity-panel">
-          <div class="panel-head"><div><h2>Aylık Personel ve Arıza Görünümü</h2><p>Onaylı gerçek çalışma takvimi, arıza duruşları ve personel bakım kapasitesi</p></div><div class="capacity-head-actions"><label>Ay<input type="month" id="capacityMonthPicker"></label><button class="secondary-btn" id="openFactoryCalendarModal">Fabrika Takvimini Ayarla</button><button class="primary-btn" id="openCapacityModal">Personel Saatlerini Gir</button></div></div>
-          <div class="capacity-summary-grid" id="monthlyCapacitySummary"></div>
-          <div class="capacity-person-list" id="monthlyCapacityList"></div>
-          <div class="monthly-machine-section"><div class="monthly-machine-head"><div><h3>Makine Bakım Kartları · Yaklaşan Bakımlar</h3><p>Makine kartlarındaki son bakım ve periyot bilgisine göre hesaplanır</p></div><button class="secondary-btn" data-go="assets">Tüm Makine Kartları</button></div><div class="monthly-machine-list" id="monthlyMachineList"></div></div>
-        </section>
-
-        <div class="dashboard-grid primary-grid">
-          <section class="panel chart-panel">
-            <div class="panel-head"><div><h2>İş Emri Durumu</h2><p>Açık operasyonların anlık dağılımı</p></div><button class="panel-action" data-go="orders">Detayları aç →</button></div>
-            <div class="status-overview"><div class="donut-wrap"><div class="donut" id="statusDonut"><div><strong id="donutTotal">0</strong><span>Açık İş</span></div></div><div class="donut-legend" id="donutLegend"></div></div><div class="mini-trend"><p>Son 12 aylık iş yoğunluğu</p><div class="spark-bars" id="monthlySpark"></div></div></div>
-          </section>
-          <section class="panel priority-panel">
-            <div class="panel-head"><div><h2>Öncelikli İşler</h2><p>Acil ve gecikmiş kayıtlar</p></div><span class="live-label">CANLI</span></div>
-            <div class="priority-list" id="priorityList"></div>
-          </section>
-        </div>
-
-        <div class="dashboard-grid secondary-grid">
-          <section class="panel">
-            <div class="panel-head"><div><h2>Bakım Planı</h2><p>Yaklaşan ve geciken planlı işler</p></div><button class="panel-action" data-go="planned">Takvime git →</button></div>
-            <div class="schedule-list" id="scheduleList"></div>
-          </section>
-          <section class="panel">
-            <div class="panel-head"><div><h2>Personel İş Yükü</h2><p>Açık iş emirlerine göre kapasite</p></div><button class="panel-action" data-go="technicians">Ekibi gör →</button></div>
-            <div class="workload-list" id="workloadList"></div>
-          </section>
-          <section class="panel">
-            <div class="panel-head"><div><h2>Son Hareketler</h2><p>Operasyon kayıt akışı</p></div></div>
-            <div class="activity-list" id="activityList"></div>
-          </section>
-        </div>
       </section>
 
       <section class="view" id="scadaView">
@@ -463,7 +425,7 @@
   <div class="modal-backdrop hidden" id="orderModal" role="dialog" aria-modal="true" aria-labelledby="orderModalTitle">
     <form class="modal" id="orderForm">
       <div class="modal-head"><div><span class="modal-eyebrow">İŞ YÖNETİMİ</span><h2 id="orderModalTitle">Yeni İş Emri</h2><p>Bakım işinin kapsamını, varlığını ve sorumlusunu belirleyin.</p></div><button type="button" class="icon-btn close-order-modal" aria-label="Kapat">×</button></div>
-      <div class="form-section"><h3>İş bilgileri</h3><div class="form-grid"><label class="full">İş emri başlığı<input required name="title" placeholder="Örn. Konveyör bant rulman kontrolü"></label><label>Makine / ekipman<select required name="assetId" id="orderAssetSelect"></select></label><label class="hidden" id="orderOtherAssetField">Diğer ekipman nedir?<input name="otherAssetName" placeholder="Ekipman veya alan adını yazın"></label><label>Konum / masraf yeri<input required name="location" placeholder="Üretim Hattı 2"></label><label>Bakım türü<select name="type"><option>Arıza Bakım</option><option>Planlı Bakım</option><option>Koruyucu Bakım</option><option>Kontrol</option><option>İyileştirme</option></select></label><label>Bakım branşı<select name="maintenanceBranch"><option>Mekanik Bakım</option><option>Elektrik Bakım</option><option>Otomasyon</option><option>Genel Bakım</option></select></label><label data-order-fault-field>Önem derecesi<select name="priority"><option>Orta</option><option>Düşük</option><option>Yüksek</option><option>Acil</option></select></label><label>Planlanan tarih<input required name="dueDate" type="date"></label><label class="hidden" data-order-period-field>Bakım periyodu<select name="period"><option>Günlük</option><option>Haftalık</option><option selected>Aylık</option><option>3 Aylık</option><option>6 Aylık</option><option>Yıllık</option><option>Özel (ay)</option></select></label><label class="hidden" data-order-custom-months>Kaç ayda bir?<input type="number" min="1" max="120" name="intervalMonths" value="2"></label><label data-order-fault-field>Arıza başlangıç tarih / saati<input name="faultStart" type="datetime-local"></label><label data-order-fault-field>SAP bildirim durumu<select name="notificationStatus"><option>Yok</option><option>Var</option></select></label><label data-order-fault-field>SAP bildirim numarası<input name="notificationNo" placeholder="Örn. 10016125"></label><label data-order-fault-field>Satın Alma Bildirim Numarası<input name="purchaseOrderNo" placeholder="Örn. 4500012345"></label><label>PT numarası<input name="ptNo" readonly placeholder="Örn. PT211"></label></div></div>
+      <div class="form-section"><h3>İş bilgileri</h3><div class="form-grid"><label class="full">İş emri başlığı<input required name="title" placeholder="Örn. Konveyör bant rulman kontrolü"></label><label>Makine / ekipman<select required name="assetId" id="orderAssetSelect"></select></label><label class="hidden" id="orderOtherAssetField">Diğer ekipman nedir?<input name="otherAssetName" placeholder="Ekipman veya alan adını yazın"></label><label>Konum / masraf yeri<input required name="location" placeholder="Üretim Hattı 2"></label><label>Bakım türü<select name="type"><option>Arıza Bakım</option><option>Planlı Bakım</option><option>Koruyucu Bakım</option><option>Kontrol</option><option>İyileştirme</option><option>Diğer</option></select></label><label>Bakım branşı<select name="maintenanceBranch"><option>Mekanik Bakım</option><option>Elektrik Bakım</option><option>Otomasyon</option><option>Genel Bakım</option></select></label><label data-order-fault-field>Önem derecesi<select name="priority"><option>Orta</option><option>Düşük</option><option>Yüksek</option><option>Acil</option></select></label><label>Planlanan tarih<input required name="dueDate" type="date"></label><label class="hidden" data-order-period-field>Bakım periyodu<select name="period"><option>Günlük</option><option>Haftalık</option><option selected>Aylık</option><option>3 Aylık</option><option>6 Aylık</option><option>Yıllık</option><option>Özel (ay)</option></select></label><label class="hidden" data-order-custom-months>Kaç ayda bir?<input type="number" min="1" max="120" name="intervalMonths" value="2"></label><label data-order-fault-field>Arıza başlangıç tarih / saati<input name="faultStart" type="datetime-local"></label><label data-order-fault-field>SAP bildirim durumu<select name="notificationStatus"><option>Yok</option><option>Var</option></select></label><label data-order-fault-field>SAP bildirim numarası<input name="notificationNo" placeholder="Örn. 10016125"></label><label data-order-fault-field>Satın Alma Bildirim Numarası<input name="purchaseOrderNo" placeholder="Örn. 4500012345"></label><label>PT numarası<input name="ptNo" readonly placeholder="Örn. PT211"></label></div></div>
       <div class="form-section"><h3 id="orderAssignmentHeading">Atama, maliyet ve açıklama</h3><div class="form-grid"><label data-order-assignment-field class="full">Atama şekli<select name="assignmentMode" id="orderAssignmentMode"><option value="selected">Seçili personele ata</option><option value="all">Herkese açık · İlk iki kişi başlatabilir</option></select></label><label data-order-assignment-field>Birinci personel<select required name="technicianId" id="orderTechSelect"></select></label><label data-order-assignment-field>İkinci personel (isteğe bağlı)<select name="secondTechnicianId" id="orderSecondTechSelect"></select></label><label>Planlanan süre (saat)<input name="plannedHours" type="number" min="0.5" step="0.5" value="1"></label><label>Tahmini maliyet (₺)<input name="estimatedCost" type="number" min="0" step="0.01" value="0"></label><label>Masraf yeri kodu<input name="costCenter" placeholder="2230 Bakım Onarım"></label><label class="full">İş açıklaması<textarea required name="description" rows="4" placeholder="Arıza belirtisi, yapılacak işlem ve iş güvenliği notları..."></textarea></label></div></div>
       <div class="modal-actions"><button type="button" class="secondary-btn close-order-modal">Vazgeç</button><button type="submit" class="primary-btn">İş Emrini Oluştur</button></div>
     </form>
@@ -473,7 +435,7 @@
     <form class="modal small-modal" id="requestForm">
       <div class="modal-head"><div><span class="modal-eyebrow">SAHA BİLDİRİMİ</span><h2 id="requestModalTitle">Yeni İş Talebi</h2><p id="requestModalDescription">Bakım ekibinin değerlendirmesi için arıza veya ihtiyaç bildirin.</p></div><button type="button" class="icon-btn close-request-modal">×</button></div>
       <input type="hidden" name="requestId">
-      <div class="form-section"><div class="form-grid"><label class="full">Talep başlığı<input required name="title" placeholder="Arıza veya ihtiyacı kısa şekilde yazın"></label><label>Ekipman<select required name="assetId" id="requestAssetSelect"></select></label><label class="hidden" id="requestOtherAssetField">Diğer ekipman nedir?<input name="otherAssetName" placeholder="Ekipman veya alan adını yazın"></label><label>Faaliyet / arıza türü<input required name="activityType" id="requestActivityType" placeholder="Örn. CNC Arızası"><span class="subtext" id="requestActivityTypeHint">Ekipman sınıfından otomatik gelir; ayrı kaydedilir</span></label><label>Konum<input required name="location"></label><label>Aciliyet<select required name="urgency" id="requestUrgency"><option value="Çok Acil">Çok Acil (5)</option><option value="Acil">Acil (4)</option><option value="Normal" selected>Normal (3)</option><option value="Ertelenebilir">Ertelenebilir (2)</option><option value="Düşük">Düşük (1)</option></select></label><label>Hesaplanan öncelik<input id="requestCalculatedPriority" readonly value="Hesaplanamadı"><span class="subtext" id="requestPriorityHint">Ekipman ve aciliyet seçimine göre hesaplanır.</span></label><label class="full">Arıza bildirim / başlangıç tarih-saati<input required name="faultStart" type="datetime-local"></label><label>Bildirim Numarası<input name="notificationNo" placeholder="İsteğe bağlı"></label><label>Satın Alma Bildirim Numarası<input name="purchaseOrderNo" placeholder="İsteğe bağlı"></label><label class="full">Açıklama <span class="optional-label">(isteğe bağlı)</span><textarea name="description" rows="4"></textarea></label></div></div>
+      <div class="form-section"><div class="form-grid"><label class="full">Talep başlığı<input required name="title" placeholder="Arıza veya ihtiyacı kısa şekilde yazın"></label><label>Ekipman<select required name="assetId" id="requestAssetSelect"></select></label><label class="hidden" id="requestOtherAssetField">Diğer ekipman nedir?<input name="otherAssetName" placeholder="Ekipman veya alan adını yazın"></label><label>Faaliyet / arıza türü<input required name="activityType" id="requestActivityType" placeholder="Örn. CNC Arızası"><span class="subtext" id="requestActivityTypeHint">Ekipman sınıfından otomatik gelir; ayrı kaydedilir</span></label><label>Bakım türü<select required name="maintenanceType" id="requestMaintenanceType"><option>Arıza Bakım</option><option>Planlı Bakım</option><option>Koruyucu Bakım</option><option>Kontrol</option><option>İyileştirme</option><option>Diğer</option></select><span class="subtext" id="requestMaintenanceTypeHint">Talebin uygulanacağı bakım akışını seçin.</span></label><label>Konum<input required name="location"></label><label>Aciliyet<select required name="urgency" id="requestUrgency"><option value="Çok Acil">Çok Acil (5)</option><option value="Acil">Acil (4)</option><option value="Normal" selected>Normal (3)</option><option value="Ertelenebilir">Ertelenebilir (2)</option><option value="Düşük">Düşük (1)</option></select></label><label>Hesaplanan öncelik<input id="requestCalculatedPriority" readonly value="Hesaplanamadı"><span class="subtext" id="requestPriorityHint">Ekipman ve aciliyet seçimine göre hesaplanır.</span></label><label class="full">Arıza bildirim / başlangıç tarih-saati<input required name="faultStart" type="datetime-local"></label><label>Bildirim Numarası<input name="notificationNo" placeholder="İsteğe bağlı"></label><label>Satın Alma Bildirim Numarası<input name="purchaseOrderNo" placeholder="İsteğe bağlı"></label><label class="full">Açıklama <span class="optional-label">(isteğe bağlı)</span><textarea name="description" rows="4"></textarea></label></div></div>
       <div class="modal-actions"><button type="button" class="secondary-btn close-request-modal">Vazgeç</button><button type="submit" class="primary-btn" id="requestSubmitBtn">Talebi Gönder</button></div>
     </form>
   </div>
@@ -725,10 +687,10 @@
 
   <div class="toast hidden" id="toast"><span>✓</span><p></p></div>
   <script src="supabase-config.js"></script>
-  <script src="supabase-cloud.js?v=20261117-notification-order-no-v17"></script>
+  <script src="supabase-cloud.js?v=20261117-request-dashboard-mttr-v19"></script>
   <script src="vendor/qrcode.min.js"></script>
   <script src="vendor/xlsx.full.min.js"></script>
-  <script src="app.js?v=20261117-mttr-report-v18"></script>
+  <script src="app.js?v=20261117-request-dashboard-mttr-v19"></script>
   <script src="machine-import.js?v=20260930-machine-import-v1"></script>
   <script src="legacy-labor-import.js?v=20261009-legacy-wait-v2"></script>
 </body>
