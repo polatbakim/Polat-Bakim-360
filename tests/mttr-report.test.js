@@ -39,6 +39,28 @@ test('MTTR için personel süreleri toplanmaz, en uzun net süre seçilir', () =
   assert.equal(context.orderLongestLaborNetMinutes({technicianId:'T1'}), 120)
 })
 
+test('iş emri saatleri değişince MTTR eski kayıtlı net süre yerine güncel süreyi kullanır', () => {
+  const order = {
+    technicianId:'T1',
+    laborEntries:[{technicianId:'T1',name:'Birinci Personel',start:'2026-01-10T08:00',finish:'2026-01-10T09:15',netMinutes:75}],
+    operatorWorkByTechnician:{T1:{start:'2026-01-10T08:00',finish:'2026-01-10T11:00',pauses:[]}},
+  }
+  const context = vm.createContext({
+    workOrderParticipantIds: () => ['T1'],
+    workOrderPersonTiming: () => ({technicianId:'T1',name:'Birinci Personel',start:'2026-01-10T08:00',finish:'2026-01-10T11:00',clock:order.operatorWorkByTechnician.T1,labor:order.laborEntries[0]}),
+    orderPersonPauseWindows: () => [],
+    operatorClockPauseMinutes: () => 0,
+    techById: () => ({name:'Birinci Personel',hourlyRate:0}),
+  })
+  vm.runInContext(extractFunction('laborIntervalMetrics'), context)
+  vm.runInContext(extractFunction('currentManagerLaborMetrics'), context)
+  vm.runInContext(extractFunction('managerLaborEntriesForOrder'), context)
+  vm.runInContext(extractFunction('orderMttrLaborSummary'), context)
+
+  assert.equal(context.managerLaborEntriesForOrder(order)[0].netMinutes, 180)
+  assert.equal(context.orderMttrLaborSummary(order).minutes, 180)
+})
+
 test('MTTR kapsamı yalnızca dahil seçili tamamlanan arızaları ve seçili ayı alır', () => {
   const orders = [
     {id:'A1',status:'Tamamlandı',type:'Arıza Bakım',includeInMttr:true,completionTime:'2026-01-10T10:00'},
@@ -65,6 +87,10 @@ test('MTTR kapsamı yalnızca dahil seçili tamamlanan arızaları ve seçili ay
 
   assert.deepEqual([...context.mttrScopeOrders().map(order=>order.id)], ['A1','A2'])
   assert.deepEqual([...context.mttrScopeOrders({includeExcluded:true}).map(order=>order.id)], ['A1','A2','A3'])
+
+  orders[0].includeInMttr = false
+  orders[1].completionTime = '2026-02-20T10:00'
+  assert.deepEqual([...context.mttrScopeOrders().map(order=>order.id)], [])
 })
 
 test('MTTR raporu yıllık ve aylık filtre, eğilim ve dışa aktarma içerir', () => {
@@ -77,4 +103,14 @@ test('MTTR raporu yıllık ve aylık filtre, eğilim ve dışa aktarma içerir',
   assert.match(app, /name='mttr-raporu'/)
   assert.match(app, /totalRepairMinutes=mttrFailures\.reduce\(\(sum,o\)=>sum\+orderLongestLaborNetMinutes\(o\)/)
   assert.match(app, /repairMinutes=mttrFailures\.reduce\(\(sum,order\)=>sum\+orderLongestLaborNetMinutes\(order\)/)
+})
+
+test('MTTR raporundaki süreler iki ondalıklı dakika olarak gösterilir', () => {
+  const render = extractFunction('renderMttrReport')
+  assert.match(render, /reportNumber\(mttrMinutes,2\).*dk/)
+  assert.match(render, /reportNumber\(row\.mttrMinutes,2\)\+' dk'/)
+  assert.match(render, /reportNumber\(row\.minutes,2\)/)
+  assert.doesNotMatch(render, /mttrMinutes\/60|row\.mttrMinutes\/60|row\.minutes\/60/)
+  const exportSection = app.slice(app.indexOf("activeReportSection==='mttr'"), app.indexOf("else{name='ariza-sayilari'"))
+  assert.doesNotMatch(exportSection, /MTTR \(SA\)|MTTR Net Süre \(SA\)/)
 })
