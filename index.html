@@ -8,7 +8,7 @@
   <meta name="theme-color" content="#0b8174">
   <link rel="icon" type="image/svg+xml" href="icons/polat-bakim.svg?v=20261001">
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="stylesheet" href="styles.css?v=20261116-management-tracking-v13">
+  <link rel="stylesheet" href="styles.css?v=20261116-follow-up-orders-v15">
   <link rel="stylesheet" href="fault-catalog.css?v=20260929-time-save">
   <link rel="stylesheet" href="completion-time.css?v=20261002-mobile-correction">
   <link rel="stylesheet" href="avatar-alignment.css?v=20260929-avatar-center">
@@ -416,7 +416,7 @@
     <form class="modal maintenance-card-modal" id="maintenanceCardForm">
       <div class="modal-head"><div><span class="modal-eyebrow">PERİYODİK BAKIM PLANI</span><h2 id="maintenanceCardModalTitle">Yeni Bakım Planı</h2><p>Makineyi, kontrol adımlarını ve bakım periyodunu tanımlayın; iş emrini gerektiğinde ayrıca açın.</p></div><button type="button" class="icon-btn maintenance-card-close">×</button></div>
       <input type="hidden" name="cardId">
-      <div class="form-section"><h3>Kart ve makine bilgileri</h3><div class="form-grid"><label class="full">Bakım kartı adı<input required name="title" placeholder="Örn. Aylık CNC mekanik kontrolü"></label><label>Makine / ekipman<select required name="assetId" id="maintenanceCardAssetSelect"></select></label><label>Varsayılan sorumlu (isteğe bağlı)<select name="technicianId" id="maintenanceCardTechSelect"></select></label><label>Bakım branşı<select name="branch"><option>Mekanik Bakım</option><option>Elektrik Bakım</option><option>Otomasyon</option><option>Genel Bakım</option></select></label><label>Periyot<select name="period"><option>Günlük</option><option>Haftalık</option><option selected>Aylık</option><option>3 Aylık</option><option>6 Aylık</option><option>Yıllık</option><option>Özel (ay)</option><option>Özel</option></select></label><label class="hidden" data-card-custom-months>Kaç ayda bir?<input type="number" min="1" max="120" name="intervalMonths" value="2"></label><label class="hidden" data-card-custom-days>Özel periyot (gün)<input type="number" min="1" name="intervalDays" value="30"></label><label>İlk / sonraki bakım tarihi<input required type="date" name="nextDueDate"></label><label>Planlanan süre (saat)<input type="number" min="0.25" step="0.25" name="plannedHours" value="1"></label><label class="full"><input type="checkbox" name="autoGenerate" checked> Periyot geldiğinde iş emrini otomatik aç</label><label>Durum<select name="active"><option value="true">Aktif</option><option value="false">Pasif</option></select></label></div></div>
+      <div class="form-section"><h3>Kart ve makine bilgileri</h3><div class="form-grid"><label class="full">Bakım kartı adı<input required name="title" placeholder="Örn. Aylık CNC mekanik kontrolü"></label><label>Makine / ekipman<select required name="assetId" id="maintenanceCardAssetSelect"></select></label><label>Varsayılan sorumlu (isteğe bağlı)<select name="technicianId" id="maintenanceCardTechSelect"></select></label><label>Bakım branşı<select name="branch"><option>Mekanik Bakım</option><option>Elektrik Bakım</option><option>Otomasyon</option><option>Genel Bakım</option></select></label><label>Periyot<select name="period"><option>Günlük</option><option>Haftalık</option><option selected>Aylık</option><option>3 Aylık</option><option>6 Aylık</option><option>Yıllık</option><option>Özel (ay)</option><option>Özel</option></select></label><label class="hidden" data-card-custom-months>Kaç ayda bir?<input type="number" min="1" max="120" name="intervalMonths" value="2"></label><label class="hidden" data-card-custom-days>Özel periyot (gün)<input type="number" min="1" name="intervalDays" value="30"></label><label>İlk / sonraki bakım tarihi<input required type="date" name="nextDueDate"></label><label>Planlanan süre (saat)<input type="number" min="0.25" step="0.25" name="plannedHours" value="1"></label><label>İş emri oluşturma zamanı<select name="workOrderLeadTime"><option value="same-day">Bakım tarihinde</option><option value="1-day">1 gün önce</option><option value="3-days">3 gün önce</option><option value="1-week">1 hafta önce</option><option value="2-weeks">2 hafta önce</option><option value="1-month">1 ay önce</option></select><span class="subtext">İş emri, bakım tarihi değişmeden seçilen süre kadar önce açılır.</span></label><label>Durum<select name="active"><option value="true">Aktif</option><option value="false">Pasif</option></select></label><label class="full"><input type="checkbox" name="autoGenerate" checked> Seçilen oluşturma tarihinde iş emrini otomatik aç</label></div></div>
       <div class="form-section"><div class="section-heading"><h3>Kontrol listesi</h3><button type="button" class="secondary-btn" id="addChecklistItemBtn">＋ Kontrol Maddesi</button></div><div class="maintenance-builder-list" id="maintenanceChecklistBuilder"></div></div>
       <div class="form-section"><div class="section-heading"><h3>Ölçüm alanları</h3><button type="button" class="secondary-btn" id="addMeasurementBtn">＋ Ölçüm Alanı</button></div><p class="section-help">Sıcaklık, basınç, titreşim veya sayaç gibi sayısal kontrolleri tanımlayın.</p><div class="measurement-builder-list" id="maintenanceMeasurementBuilder"></div></div>
       <div class="form-section"><div class="form-grid"><label class="full">Bakım talimatı / iş güvenliği notu<textarea name="instructions" rows="3"></textarea></label></div></div>
@@ -709,10 +709,10 @@
 
   <div class="toast hidden" id="toast"><span>✓</span><p></p></div>
   <script src="supabase-config.js"></script>
-  <script src="supabase-cloud.js?v=20261116-management-tracking-v13"></script>
+  <script src="supabase-cloud.js?v=20261116-follow-up-orders-v15"></script>
   <script src="vendor/qrcode.min.js"></script>
   <script src="vendor/xlsx.full.min.js"></script>
-  <script src="app.js?v=20261116-management-tracking-v13"></script>
+  <script src="app.js?v=20261116-follow-up-orders-v15"></script>
   <script src="machine-import.js?v=20260930-machine-import-v1"></script>
   <script src="legacy-labor-import.js?v=20261009-legacy-wait-v2"></script>
 </body>
