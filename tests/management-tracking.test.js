@@ -59,6 +59,12 @@ test('tüm takip özetleri tıklanarak ilgili kayıtları süzer', () => {
   assert.match(html, /option value="overdue">Gecikenler/)
 })
 
+test('iş emri olan ve olmayan takip satırları aynı sütun genişliklerini kullanır', () => {
+  const css = fs.readFileSync(path.join(__dirname, '..', 'styles.css'), 'utf8')
+  assert.match(css, /grid-template-columns:10px minmax\(280px,2fr\) minmax\(125px,\.65fr\) minmax\(150px,\.8fr\) minmax\(150px,\.8fr\) 250px/)
+  assert.match(css, /\.follow-up-actions\{display:flex;align-items:center;justify-content:flex-end/)
+})
+
 test('işçiliği bitmiş fakat arızası açık iş SCADA ve makine kartında açık kalır', () => {
   assert.match(app, /state\.orders\.filter\(order=>isActive\(order\)\|\|orderResolutionOpen\(order\)\)/)
   assert.match(app, /openJobs=jobs\.filter\(order=>isActive\(order\)\|\|orderResolutionOpen\(order\)\)/)
