@@ -65,6 +65,12 @@ test('iş emri olan ve olmayan takip satırları aynı sütun genişliklerini ku
   assert.match(css, /\.follow-up-actions\{display:flex;align-items:center;justify-content:flex-end/)
 })
 
+test('takip türü listesinde servis süreçleri bulunur', () => {
+  assert.match(html, /<option>Servis Gelecek<\/option>/)
+  assert.match(html, /<option>Servise Gönderilecek<\/option>/)
+  assert.match(html, /<option>Serviste<\/option>/)
+})
+
 test('işçiliği bitmiş fakat arızası açık iş SCADA ve makine kartında açık kalır', () => {
   assert.match(app, /state\.orders\.filter\(order=>isActive\(order\)\|\|orderResolutionOpen\(order\)\)/)
   assert.match(app, /openJobs=jobs\.filter\(order=>isActive\(order\)\|\|orderResolutionOpen\(order\)\)/)
