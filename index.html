@@ -8,7 +8,7 @@
   <meta name="theme-color" content="#0b8174">
   <link rel="icon" type="image/svg+xml" href="icons/polat-bakim.svg?v=20261001">
   <link rel="manifest" href="manifest.webmanifest">
-<link rel="stylesheet" href="styles.css?v=20261117-mttr-live-v21">
+<link rel="stylesheet" href="styles.css?v=20261118-follow-up-opened-at-v23">
   <link rel="stylesheet" href="fault-catalog.css?v=20260929-time-save">
   <link rel="stylesheet" href="completion-time.css?v=20261002-mobile-correction">
   <link rel="stylesheet" href="avatar-alignment.css?v=20260929-avatar-center">
@@ -372,7 +372,7 @@
           <div class="stats-grid report-kpis" id="mttrStats"></div>
           <div class="report-two-column mttr-report-grid">
             <section class="panel report-data-panel"><div class="panel-head"><div><h2>Aylık MTTR Eğilimi</h2><p>Seçili yıl içinde ay bazında ortalama onarım süresi</p></div></div><div class="mttr-monthly-bars" id="mttrMonthlyBars"></div></section>
-            <section class="panel report-data-panel mttr-formula-card"><div class="panel-head"><div><h2>Hesaplama Yöntemi</h2><p>Arıza başına tek süre kullanılır</p></div></div><div class="mttr-formula"><b>MTTR = Σ (iş emrindeki en uzun net personel süresi) ÷ tamamlanan arıza adedi</b><span>Yalnızca “Tamamlandı” durumundaki, arıza kapanışı yapılmış ve “MTTR hesabına dahil et” seçili iş emirleri hesaplanır.</span><span>Örnek: Aynı işte 120 dk ve 75 dk çalışan iki kişi varsa hesaplamaya 120 dk girer.</span></div></section>
+            <section class="panel report-data-panel mttr-formula-card"><div class="panel-head"><div><h2>Hesaplama Yöntemi</h2><p>Arıza başına tek süre kullanılır</p></div></div><div class="mttr-formula"><b>MTTR = Σ (iş emrindeki en uzun net personel süresi) ÷ tamamlanan arıza adedi</b><span>Yalnızca bakım türü “Arıza Bakım” olan, “Tamamlandı” durumundaki, arıza kapanışı yapılmış ve hem MTTR hem MTBF kapsamına dahil edilen iş emirleri hesaplanır.</span><span>Örnek: Aynı işte 120 dk ve 75 dk çalışan iki kişi varsa hesaplamaya 120 dk girer.</span></div></section>
           </div>
           <section class="panel report-data-panel"><div class="panel-head"><div><h2>MTTR Arıza Detayı</h2><p>Her iş emrindeki en uzun net işçilik süresi</p></div><span class="source-pill" id="mttrReportCount">0 arıza</span></div><div class="table-wrap report-table-wrap"><table class="report-table"><thead><tr><th>Tamamlanma</th><th>İş Emri / Arıza</th><th>Ekipman</th><th>En Uzun Çalışan Personel</th><th>Personel Sayısı</th><th>MTTR'ye Giren Net Süre (DK)</th></tr></thead><tbody id="mttrReportBody"></tbody></table></div></section>
         </section>
@@ -494,6 +494,7 @@
         <label>Öncelik<select name="priority" required><option>Düşük</option><option selected>Orta</option><option>Yüksek</option><option>Acil</option></select></label>
         <label class="full">Kişi / firma / bölüm<input name="contact" placeholder="Örn. ABC Servis · Ahmet Bey"></label>
         <label class="full">Bildirim numarası<input name="notificationNo" placeholder="Örn. 10016125"></label>
+        <label class="full">Talep açılış zamanı<input type="datetime-local" name="requestOpenedAt" required><span class="subtext">Otomatik doldurulur; yalnızca Admin Yönetici düzeltebilir.</span></label>
         <label class="full">Açıklama ve beklenen sonuç<textarea name="note" rows="4" placeholder="Görüşülecek konu, istenecek termin veya beklenen yanıt..."></textarea></label>
       </div></div>
       <div class="modal-actions"><button type="button" class="secondary-btn follow-up-close">Vazgeç</button><button type="submit" class="primary-btn">Takibi Kaydet</button></div>
@@ -687,10 +688,10 @@
 
   <div class="toast hidden" id="toast"><span>✓</span><p></p></div>
   <script src="supabase-config.js"></script>
-<script src="supabase-cloud.js?v=20261117-mttr-live-v21"></script>
+<script src="supabase-cloud.js?v=20261118-follow-up-opened-at-v23"></script>
   <script src="vendor/qrcode.min.js"></script>
   <script src="vendor/xlsx.full.min.js"></script>
-<script src="app.js?v=20261117-mttr-live-v21"></script>
+<script src="app.js?v=20261118-follow-up-opened-at-v23"></script>
   <script src="machine-import.js?v=20260930-machine-import-v1"></script>
   <script src="legacy-labor-import.js?v=20261009-legacy-wait-v2"></script>
 </body>
