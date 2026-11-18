@@ -46,10 +46,17 @@ test('takip konularında talep açılışı otomatik gösterilir ve yalnızca Ad
   assert.match(app, /requestOpenedAt:order\.requestOpenedAt\|\|order\.createdAt/)
 })
 
-test('tamamlanan takip özeti tıklanarak tamamlanan kayıtları süzer', () => {
-  assert.match(app, /data-follow-up-summary-status="completed"/)
+test('tüm takip özetleri tıklanarak ilgili kayıtları süzer', () => {
+  assert.match(app, /counts\.open,'Açık','open'/)
+  assert.match(app, /counts\.today,'Bugün','today'/)
+  assert.match(app, /counts\.overdue,'Geciken','overdue'/)
+  assert.match(app, /counts\.completed,'Tamamlanan','completed'/)
   assert.match(app, /followUpStatusFilter=button\.dataset\.followUpSummaryStatus/)
   assert.match(app, /\$\('#followUpStatusFilter'\)\.value=followUpStatusFilter/)
+  assert.match(app, /followUpStatusFilter==='today'/)
+  assert.match(app, /followUpStatusFilter==='overdue'/)
+  assert.match(html, /option value="today">Bugün/)
+  assert.match(html, /option value="overdue">Gecikenler/)
 })
 
 test('işçiliği bitmiş fakat arızası açık iş SCADA ve makine kartında açık kalır', () => {
