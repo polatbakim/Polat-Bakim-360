@@ -8,7 +8,7 @@
   <meta name="theme-color" content="#0b8174">
   <link rel="icon" type="image/svg+xml" href="icons/polat-bakim.svg?v=20261001">
   <link rel="manifest" href="manifest.webmanifest">
-<link rel="stylesheet" href="styles.css?v=20261118-follow-up-row-alignment-v27">
+<link rel="stylesheet" href="styles.css?v=20261118-follow-up-service-types-v28">
   <link rel="stylesheet" href="fault-catalog.css?v=20260929-time-save">
   <link rel="stylesheet" href="completion-time.css?v=20261002-mobile-correction">
   <link rel="stylesheet" href="avatar-alignment.css?v=20260929-avatar-center">
@@ -488,7 +488,7 @@
       <input type="hidden" name="id">
       <div class="form-section"><div class="form-grid">
         <label class="full">Konu<input name="title" required placeholder="Örn. Pompa servisi aranacak"></label>
-        <label>Takip türü<select name="type" required><option>Aranacak</option><option>Görüşülecek</option><option>Termin Alınacak</option><option>Teklif Bekleniyor</option><option>Sipariş Takibi</option><option>Onay Bekleniyor</option><option>Diğer</option></select></label>
+        <label>Takip türü<select name="type" required><option>Aranacak</option><option>Görüşülecek</option><option>Termin Alınacak</option><option>Teklif Bekleniyor</option><option>Sipariş Takibi</option><option>Onay Bekleniyor</option><option>Servis Gelecek</option><option>Servise Gönderilecek</option><option>Serviste</option><option>Diğer</option></select></label>
         <label>Sorumlu yönetici<select name="ownerId" required></select></label>
         <label>Son takip zamanı<input type="datetime-local" name="dueAt" required></label>
         <label>Öncelik<select name="priority" required><option>Düşük</option><option selected>Orta</option><option>Yüksek</option><option>Acil</option></select></label>
@@ -688,10 +688,10 @@
 
   <div class="toast hidden" id="toast"><span>✓</span><p></p></div>
   <script src="supabase-config.js"></script>
-<script src="supabase-cloud.js?v=20261118-follow-up-row-alignment-v27"></script>
+<script src="supabase-cloud.js?v=20261118-follow-up-service-types-v28"></script>
   <script src="vendor/qrcode.min.js"></script>
   <script src="vendor/xlsx.full.min.js"></script>
-<script src="app.js?v=20261118-follow-up-row-alignment-v27"></script>
+<script src="app.js?v=20261118-follow-up-service-types-v28"></script>
   <script src="machine-import.js?v=20260930-machine-import-v1"></script>
   <script src="legacy-labor-import.js?v=20261009-legacy-wait-v2"></script>
 </body>
