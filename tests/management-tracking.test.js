@@ -80,6 +80,11 @@ test('takip konuları araması metin ve bağlı iş bilgileriyle birlikte çalı
   assert.match(app, /\$\('#followUpSearch'\)\.addEventListener\('input'/)
 })
 
+test('takip özet kutuları iki ayırıcı çizgi arasında dikey ortalanır', () => {
+  const css = fs.readFileSync(path.join(__dirname, '..', 'styles.css'), 'utf8')
+  assert.match(css, /\.follow-up-summary\{[^}]*padding:7px 18px/)
+})
+
 test('işçiliği bitmiş fakat arızası açık iş SCADA ve makine kartında açık kalır', () => {
   assert.match(app, /state\.orders\.filter\(order=>isActive\(order\)\|\|orderResolutionOpen\(order\)\)/)
   assert.match(app, /openJobs=jobs\.filter\(order=>isActive\(order\)\|\|orderResolutionOpen\(order\)\)/)
