@@ -73,11 +73,15 @@ test('takip türü listesinde servis süreçleri bulunur', () => {
 
 test('takip konuları araması metin ve bağlı iş bilgileriyle birlikte çalışır', () => {
   assert.match(html, /id="followUpSearch" type="search"/)
+  assert.match(html, /id="followUpSearchBtn"/)
   assert.match(app, /let followUpSearch = ''/)
   assert.match(app, /followUpSearch\.trim\(\)\.toLocaleLowerCase\('tr-TR'\)/)
-  assert.match(app, /item\.title,item\.type,item\.ownerName,item\.notificationNo,item\.contact,item\.note/)
+  assert.match(app, /item\.id,item\.title,item\.type,item\.ownerName,item\.notificationNo,item\.contact,item\.note/)
   assert.match(app, /linkedOrder&&visibleWorkOrderNo\(linkedOrder\)/)
-  assert.match(app, /\$\('#followUpSearch'\)\.addEventListener\('input'/)
+  assert.match(app, /asset\?\.department,asset\?\.category,asset\?\.location/)
+  assert.match(app, /function applyFollowUpSearch\(\)/)
+  assert.match(app, /\$\('#followUpSearchBtn'\)\.addEventListener\('click',applyFollowUpSearch\)/)
+  assert.match(app, /Aramayla eşleşen takip bulunamadı/)
 })
 
 test('takip özet kutuları iki ayırıcı çizgi arasında dikey ortalanır', () => {
