@@ -52,7 +52,9 @@ test('iş emri saatleri değişince MTTR eski kayıtlı net süre yerine güncel
     operatorClockPauseMinutes: () => 0,
     techById: () => ({name:'Birinci Personel',hourlyRate:0}),
   })
+  vm.runInContext(extractFunction('mergedLaborPauseRanges'), context)
   vm.runInContext(extractFunction('laborIntervalMetrics'), context)
+  vm.runInContext(extractFunction('laborFactoryScheduleEntries'), context)
   vm.runInContext(extractFunction('currentManagerLaborMetrics'), context)
   vm.runInContext(extractFunction('managerLaborEntriesForOrder'), context)
   vm.runInContext(extractFunction('orderMttrLaborSummary'), context)
@@ -61,15 +63,17 @@ test('iş emri saatleri değişince MTTR eski kayıtlı net süre yerine güncel
   assert.equal(context.orderMttrLaborSummary(order).minutes, 180)
 })
 
-test('MTTR kapsamı yalnızca dahil seçili tamamlanan arızaları ve seçili ayı alır', () => {
+test('MTTR kapsamı yalnızca Arıza Bakım türündeki, MTTR ve MTBF dahil tamamlanan işleri ve seçili ayı alır', () => {
   const orders = [
-    {id:'A1',status:'Tamamlandı',type:'Arıza Bakım',includeInMttr:true,completionTime:'2026-01-10T10:00'},
+    {id:'A1',status:'Tamamlandı',type:'Arıza Bakım',includeInMttr:true,includeInMtbf:true,completionTime:'2026-01-10T10:00'},
     {id:'A2',status:'Tamamlandı',type:'Arıza Bakım',completionTime:'2026-01-20T10:00'},
-    {id:'A3',status:'Tamamlandı',type:'Arıza Bakım',includeInMttr:false,completionTime:'2026-01-21T10:00'},
+    {id:'A3',status:'Tamamlandı',type:'Arıza Bakım',includeInMttr:false,includeInMtbf:true,completionTime:'2026-01-21T10:00'},
     {id:'A4',status:'Devam Ediyor',type:'Arıza Bakım',includeInMttr:true,completionTime:'2026-01-22T10:00'},
-    {id:'A5',status:'Tamamlandı',type:'Planlı Bakım',includeInMttr:true,completionTime:'2026-01-23T10:00'},
+    {id:'A5',status:'Tamamlandı',type:'Planlı Bakım',includeInMttr:true,includeInMtbf:true,completionTime:'2026-01-23T10:00'},
     {id:'A6',status:'Tamamlandı',type:'Arıza Bakım',includeInMttr:true,completionTime:'2026-02-01T10:00'},
     {id:'A7',status:'Tamamlandı',type:'Arıza Bakım',includeInMttr:true,resolutionOpen:true,completionTime:'2026-01-25T10:00'},
+    {id:'A8',status:'Tamamlandı',type:'Arıza Bakım',includeInMttr:true,includeInMtbf:false,completionTime:'2026-01-26T10:00'},
+    {id:'A9',status:'Tamamlandı',type:'Diğer',title:'ARITMA MOTORLARI ÖLÇÜMÜ',includeInMttr:true,includeInMtbf:true,completionTime:'2026-01-27T10:00'},
   ]
   const context = vm.createContext({
     state:{orders},
@@ -78,7 +82,6 @@ test('MTTR kapsamı yalnızca dahil seçili tamamlanan arızaları ve seçili ay
     assetById: () => ({name:'Makine',code:'PT1'}),
     visibleWorkOrderNo: order => order.id,
     isWorkOrder: () => true,
-    reportIsFailure: order => /arıza/i.test(order.type),
     orderResolutionOpen: order => order.resolutionOpen===true,
     reportOrderPeople: () => [],
   })
@@ -86,7 +89,7 @@ test('MTTR kapsamı yalnızca dahil seçili tamamlanan arızaları ve seçili ay
   vm.runInContext(extractFunction('mttrScopeOrders'), context)
 
   assert.deepEqual([...context.mttrScopeOrders().map(order=>order.id)], ['A1','A2'])
-  assert.deepEqual([...context.mttrScopeOrders({includeExcluded:true}).map(order=>order.id)], ['A1','A2','A3'])
+  assert.deepEqual([...context.mttrScopeOrders({includeExcluded:true}).map(order=>order.id)], ['A1','A2','A3','A8'])
 
   orders[0].includeInMttr = false
   orders[1].completionTime = '2026-02-20T10:00'

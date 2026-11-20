@@ -36,3 +36,12 @@ test('işçilik satırı yoksa ana başlangıç ve bitiş tarihleri kullanılır
   const dates = context.managerLaborScheduleDates('2026-10-12T09:00', '2026-10-13T10:00', [])
   assert.deepEqual(Array.from(dates), ['2026-10-12', '2026-10-13'])
 })
+
+test('bir işçilik birden fazla güne yayılıyorsa aradaki bütün takvim günleri hazırlanır', () => {
+  const dates = context.managerLaborScheduleDates('', '', [
+    {start:'2026-10-16T14:30', finish:'2026-10-20T10:00'},
+  ])
+  assert.deepEqual(Array.from(dates), [
+    '2026-10-16', '2026-10-17', '2026-10-18', '2026-10-19', '2026-10-20',
+  ])
+})

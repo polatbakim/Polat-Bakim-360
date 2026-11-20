@@ -46,6 +46,7 @@ test('iş emri Excel satırı kişi bazlı ve toplam işçilik sürelerini içer
   assert.equal(column(rows, 'İşçilik Personeli', 2), 'İkinci Personel')
   assert.equal(column(rows, 'Brüt İşçilik (dk)', 1), 120)
   assert.equal(column(rows, 'Ara Süresi (dk)', 1), 15)
+  assert.equal(column(rows, 'Fabrika Molası (dk)', 1), 0)
   assert.equal(column(rows, 'Net İşçilik (dk)', 1), 105)
   assert.equal(column(rows, 'Brüt İşçilik (dk)', 2), 105)
   assert.equal(column(rows, 'Ara Süresi (dk)', 2), 30)
@@ -104,4 +105,21 @@ test('indirilen Excel dosyasında maliyet hücreleri gerçek sayı ve para biçi
   assert.equal(cell.t, 'n')
   assert.equal(cell.v, 2578.33)
   assert.equal(cell.z, '#,##0.00 ₺')
+})
+
+test('eski Excel kökenli iş sonradan tamamlandıysa dışa aktarım güncel işçilik hesabını kullanır', () => {
+  context.managerLaborEntriesForOrder = order => order.recalculatedLaborEntries || order.laborEntries || []
+  const rows = context.buildOrderExportRows([{
+    id: '10017022', title: 'PT101 Y EKSEN ARIZASI', assetId: 'A1', type: 'Arıza Bakım', status: 'Tamamlandı',
+    technicianId: 'T1', legacyLaborImport: true,
+    laborEntries: [{ technicianId: 'T1', grossMinutes: 680, pauseMinutes: 620, netMinutes: 0 }],
+    recalculatedLaborEntries: [{
+      technicianId: 'T1', name: 'Birinci Personel', start: '2026-10-16T14:30', finish: '2026-11-19T15:50',
+      grossMinutes: 680, pauseMinutes: 500, netMinutes: 120,
+    }],
+  }])
+
+  assert.equal(column(rows, 'Brüt İşçilik (dk)'), 680)
+  assert.equal(column(rows, 'Ara Süresi (dk)'), 500)
+  assert.equal(column(rows, 'Net İşçilik (dk)'), 120)
 })

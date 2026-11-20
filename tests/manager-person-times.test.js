@@ -7,6 +7,18 @@ const vm = require('node:vm')
 const root = path.join(__dirname, '..')
 const app = fs.readFileSync(path.join(root, 'app.js'), 'utf8')
 const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8')
+function extractFunction(name) {
+  const start = app.indexOf(`function ${name}(`)
+  assert.notEqual(start, -1, `${name} bulunamadı`)
+  const bodyStart = app.indexOf('{', start)
+  let depth = 0
+  for (let index = bodyStart; index < app.length; index += 1) {
+    if (app[index] === '{') depth += 1
+    if (app[index] === '}') depth -= 1
+    if (depth === 0) return app.slice(start, index + 1)
+  }
+  throw new Error(`${name} tamamlanamadı`)
+}
 const technicians = {T1:{name:'Birinci Personel',hourlyRate:300},T2:{name:'İkinci Personel',hourlyRate:350}}
 const context = vm.createContext({
   techById: id => technicians[id] || {name:'Atanmadı',hourlyRate:0},
@@ -15,8 +27,9 @@ const context = vm.createContext({
   manualFactoryScheduleOverlapMinutes: () => 0,
 })
 vm.runInContext(app.slice(app.indexOf('function operatorClock('), app.indexOf('function operatorCanAddPerson(')), context)
-vm.runInContext(app.slice(app.indexOf('function laborIntervalMetrics('), app.indexOf('function finishOperatorClocks(')), context)
+vm.runInContext(app.slice(app.indexOf('function mergedLaborPauseRanges('), app.indexOf('function operatorUnfinishedParticipantIds(')), context)
 vm.runInContext(app.slice(app.indexOf('function validateManagerPersonTimes('), app.indexOf('function managerPauseEditorRow(')), context)
+vm.runInContext(extractFunction('applyManagerLaborParticipants'), context)
 
 test('atanmış iki kişi, yalnızca bir işçilik satırı bulunsa da ayrı ayrı hazırlanır', () => {
   const order = {
@@ -71,4 +84,28 @@ test('maliyet onayında düzenlenen kişi saatleri operatör saatlerine de aktar
 
 test('ara verme seçeneklerinde başka işe geçme bulunur', () => {
   assert.match(html, /<option>Başka işe geçme<\/option>/)
+  assert.doesNotMatch(app, /type==='Başka işe geçme'.*finishOwnOperatorLabor/)
+  assert.doesNotMatch(app, /Bu işte devam eden başka personel yok/)
+  assert.match(app, /holdReasonTitle.*visibleWorkOrderNo\(o\).*o\.title/)
+})
+
+test('maliyet onayında unutulan personel ekleme kontrolleri bulunur', () => {
+  assert.match(html, /id="managerAddLaborBtn"/)
+  assert.match(html, /id="managerLaborTechnicianSelect"/)
+  assert.match(html, /id="managerConfirmAddLaborBtn"/)
+  assert.match(app, /function addManagerLaborPerson\(/)
+  assert.match(app, /data-remove-manager-labor/)
+})
+
+test('yöneticinin eklediği personel iş emrinin katılımcılarına aktarılır', () => {
+  const order = {technicianId:'T1',assignedTechnicians:['T1'],additionalTechnicians:[]}
+  const entries = [
+    {technicianId:'T1',name:'Birinci Personel'},
+    {technicianId:'T2',name:'İkinci Personel',managerAdded:true},
+  ]
+  const addedNames = context.applyManagerLaborParticipants(order, entries)
+  assert.deepEqual([...addedNames], ['İkinci Personel'])
+  assert.deepEqual([...order.assignedTechnicians], ['T1','T2'])
+  assert.deepEqual([...order.additionalTechnicians], ['T2'])
+  assert.equal(entries[1].managerAdded, undefined)
 })
