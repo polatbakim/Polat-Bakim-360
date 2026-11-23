@@ -33,7 +33,7 @@ test('diğer arıza açıklamaları ilgili seçimlere bağlıdır ve kök neden 
   }
   assert.match(app, /const FAILURE_OTHER_FIELDS=/)
   assert.match(app, /function syncOtherFailureFields\(/)
-  assert.match(app, /rootCauseAnalysis:f\.get\('rootCauseAnalysis'\)\.trim\(\)/)
+  assert.match(app, /rootCauseAnalysis:faultValue\('rootCauseAnalysis'\)/)
   assert.match(html, /name="rootCauseAnalysis"/)
   assert.match(app, /Kök Neden Analizi/)
 })

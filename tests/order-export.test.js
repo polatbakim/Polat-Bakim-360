@@ -19,6 +19,7 @@ const context = vm.createContext({
   techById: id => technicians[id] || { name: 'Atanmadı' },
   canonicalAssetCategory: value => value || '',
   visibleWorkOrderNo: order => order.id,
+  isFailureMaintenanceOrder: order => String(order?.type || order?.maintenanceType || '').trim() === 'Arıza Bakım',
   notificationStatusValue: (number, status) => status || (number ? 'Var' : 'Yok'),
   minutesBetween: (start, end) => start && end ? Math.max(0, Math.round((new Date(end) - new Date(start)) / 60000)) : 0,
   formatMinutesLabel: value => `${Number(value) || 0} dk`,
@@ -77,6 +78,21 @@ test('arıza tanım ve nedenleri ayrı sütunlara aktarılır', () => {
   assert.equal(column(rows, 'Mekanik Arıza Nedeni'), 'Aşınma')
   assert.equal(column(rows, 'Diğer Mekanik Arıza Nedeni'), 'Yağsız kalmış')
   assert.equal(column(rows, 'Kök Neden Analizi'), 'Periyodik kontrol eksik')
+})
+
+test('Arıza Bakım olmayan işlerde arıza alanları Excel satırına taşınmaz', () => {
+  const rows = context.buildOrderExportRows([{
+    id: 'IE-OTHER', title: 'Anahtar yer değişikliği', assetId: 'A1', type: 'Diğer', status: 'Tamamlandı', technicianId: 'T1',
+    completionDetails: {
+      mechanicalFaults: ['Diğer Arızalar'], mechanicalCauses: ['Diğer Arızalar'],
+      otherMechanicalFault: '..', otherMechanicalCause: '..', rootCauseAnalysis: 'İş istek', workPerformed: 'Anahtar taşındı',
+    },
+  }])
+  assert.equal(column(rows, 'Mekanik Arıza Tanımı'), '')
+  assert.equal(column(rows, 'Mekanik Arıza Nedeni'), '')
+  assert.equal(column(rows, 'Diğer Mekanik Arıza Tanımı'), '')
+  assert.equal(column(rows, 'Kök Neden Analizi'), '')
+  assert.equal(column(rows, 'Yapılan İşlem / Teknik Sonuç'), 'Anahtar taşındı')
 })
 
 test('maliyetler metne dönüşmeden iki ondalıklı sayı olarak aktarılır', () => {
