@@ -47,7 +47,8 @@ test('Diğer arıza açıklamaları en az altı karakter ister', () => {
 })
 
 test('arıza bakım olmayan kapanışta eski arıza alanları yeniden kaydedilmez', () => {
-  assert.match(app, /electricalFaults=failureMaintenance\?f\.getAll\('electricalFault'\):\[\]/)
+  assert.match(app, /electricalFaults=failureMaintenance&&failureGroups\.electrical\?f\.getAll\('electricalFault'\):\[\]/)
+  assert.match(app, /mechanicalFaults=failureMaintenance&&failureGroups\.mechanical\?f\.getAll\('mechanicalFault'\):\[\]/)
   assert.match(app, /rootCauseAnalysis:faultValue\('rootCauseAnalysis'\)/)
   assert.match(app, /failureCodes=failureMaintenance\?failureCodeEntries/)
 })
