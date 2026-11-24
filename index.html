@@ -8,7 +8,7 @@
   <meta name="theme-color" content="#0b8174">
   <link rel="icon" type="image/svg+xml" href="icons/polat-bakim.svg?v=20261001">
   <link rel="manifest" href="manifest.webmanifest">
-<link rel="stylesheet" href="styles.css?v=20261124-fault-branch-v36">
+<link rel="stylesheet" href="styles.css?v=20261124-manager-fault-review-v37">
   <link rel="stylesheet" href="fault-catalog.css?v=20260929-time-save">
   <link rel="stylesheet" href="completion-time.css?v=20261002-mobile-correction">
   <link rel="stylesheet" href="avatar-alignment.css?v=20260929-avatar-center">
@@ -538,6 +538,7 @@
       <div class="modal-head"><div><span class="modal-eyebrow">YÖNETİCİ MALİYET ONAYI</span><h2 id="costApprovalTitle">İş Emri Maliyetlerini Onayla</h2><p>Operatörün süre ve malzeme kayıtlarını fiyatlandırın.</p></div><button type="button" class="icon-btn cost-approval-close">×</button></div>
       <input type="hidden" name="orderId">
       <div class="completion-summary" id="costApprovalSummary"></div>
+      <div class="form-section manager-failure-review hidden" id="managerFailureReview"><div class="section-heading"><div><h3>Operatör arıza bildirimi</h3><span>Arıza tanımını, nedenini ve kök neden bilgisini kontrol edin. Hatalıysa operatörden düzeltme isteyin.</span></div><button type="button" class="secondary-btn" id="managerFailureReturnBtn">Düzeltme İste</button></div><div class="manager-failure-review-grid" id="managerFailureReviewGrid"></div></div>
       <div class="form-section sap-reference-section"><div class="section-heading"><div><h3>SAP ve satın alma referansları</h3><span>Bu numaralar ileride SAP entegrasyonunda iş emrinin eşleştirme anahtarları olacaktır.</span></div></div><div class="form-grid"><label>SAP bildirim durumu<select name="managerNotificationStatus"><option>Yok</option><option>Var</option></select></label><label>SAP bildirim numarası<input name="managerNotificationNo" placeholder="Örn. 10016125"></label><label class="full">Satın Alma Bildirim Numarası<input name="managerPurchaseOrderNo" placeholder="Örn. 4500012345"></label></div></div>
       <div class="form-section"><div class="section-heading"><h3>İş emri çalışma saatleri</h3><span>Başlama, bitirme ve ara verme zamanlarını yönetici düzeltebilir</span></div><div class="form-grid manager-order-times"><label>İşe başlama<input type="datetime-local" name="managerStartTime" required></label><label>İşi bitirme<input type="datetime-local" name="managerCompletionTime" required></label><label>Ara başlangıcı<input type="datetime-local" name="managerPauseStart"></label><label>Ara bitişi<input type="datetime-local" name="managerPauseEnd"></label><label class="full">Ara verme nedeni<textarea name="managerPauseReason" rows="2" placeholder="Ara verildiyse nedeni zorunludur"></textarea></label></div></div>
       <div class="form-section manager-factory-section">
@@ -688,10 +689,10 @@
 
   <div class="toast hidden" id="toast"><span>✓</span><p></p></div>
   <script src="supabase-config.js"></script>
-<script src="supabase-cloud.js?v=20261124-fault-branch-v36"></script>
+<script src="supabase-cloud.js?v=20261124-manager-fault-review-v37"></script>
   <script src="vendor/qrcode.min.js"></script>
   <script src="vendor/xlsx.full.min.js"></script>
-<script src="app.js?v=20261124-fault-branch-v36"></script>
+<script src="app.js?v=20261124-manager-fault-review-v37"></script>
   <script src="machine-import.js?v=20260930-machine-import-v1"></script>
   <script src="legacy-labor-import.js?v=20261009-legacy-wait-v2"></script>
 </body>
