@@ -26,6 +26,19 @@ test('yönetici onayı arıza kapanış tarihi ve takip alanlarını içerir', (
   assert.match(app, /applyOrderManagementTracking\(o,\{faultClosedAt,managementStatus,managementOwnerId,managementDueAt,managementNote\}\)/)
 })
 
+test('arıza kapanmamış işte tarih boş kalır ve yönetim takibi açılabilir', () => {
+  const start = app.indexOf('function managerDateTimeInput(')
+  const end = app.indexOf('function managerLaborRow(', start)
+  const context = vm.createContext({})
+  vm.runInContext(app.slice(start, end), context)
+
+  assert.equal(context.managerDateTimeInput('2026-11-25T09:30:00'), '2026-11-25T09:30')
+  assert.equal(context.managerDateTimeInput('25.11.2026 09:30'), '2026-11-25T09:30')
+  assert.equal(context.managerDateTimeInput('30'), '')
+  assert.match(app, /if\(order&&!order\.faultClosedAt\)field\.value=''/)
+  assert.match(app, /field\.required=!closed/)
+})
+
 test('dashboard, iş emri listesi ve takip konuları aynı yönetim kaydını kullanır', () => {
   assert.match(html, /id="managementTrackingSummary"/)
   assert.match(html, /id="orderManagementFilter"/)
