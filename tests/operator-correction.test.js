@@ -9,7 +9,7 @@ const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8')
 
 test('yönetici düzeltmesinde operatör yeniden işe başlamaz, yalnızca düzeltme formunu açar', () => {
   const start = app.indexOf('function operatorTimingSummary(')
-  const end = app.indexOf('function operatorAction(', start)
+  const end = app.indexOf('async function operatorAction(', start)
   const context = vm.createContext({
     assetById: () => ({ name: 'Makine', code: 'PT001', location: 'Üretim' }),
     operatorCanStart: () => false,
@@ -17,6 +17,9 @@ test('yönetici düzeltmesinde operatör yeniden işe başlamaz, yalnızca düze
     operatorIsWorking: () => true,
     operatorIsWaiting: () => false,
     operatorClock: () => null,
+    operatorOwnLaborFinished: () => false,
+    operatorCanCompleteOrder: () => false,
+    operatorHasOtherUnfinished: () => false,
     operatorHasStarted: () => true,
     orderAssignedToTechnician: () => true,
     operatorTechId: 'T1',
@@ -56,7 +59,7 @@ test('başlamış iş eski kişi listesi boş olsa bile tekrar İşe Başla gös
 
 test('operatör kartı başlangıç ve tüm ara saatlerini her iş durumunda gösterir', () => {
   const start = app.indexOf('function operatorTimingSummary(')
-  const end = app.indexOf('function operatorAction(', start)
+  const end = app.indexOf('async function operatorAction(', start)
   const context = vm.createContext({
     assetById: () => ({name:'Makine',code:'PT001',location:'Üretim'}),
     operatorCanStart: () => false,
@@ -64,6 +67,9 @@ test('operatör kartı başlangıç ve tüm ara saatlerini her iş durumunda gö
     operatorIsWorking: () => false,
     operatorIsWaiting: () => false,
     operatorClock: () => null,
+    operatorOwnLaborFinished: () => false,
+    operatorCanCompleteOrder: () => false,
+    operatorHasOtherUnfinished: () => false,
     operatorHasStarted: () => true,
     orderAssignedToTechnician: () => true,
     operatorTechId: 'T1',
@@ -102,9 +108,22 @@ test('operatör saatleri değiştiremez; duruş seçimi boş başlar ve zorunlud
   assert.match(app, /isActive\(order\)\|\|order\.status==='Tamamlandı'/)
 })
 
-test('operatör düzeltme isteği yönetici bildirimine girer ve Supabase doğrulanmadan gönderildi denmez', () => {
-  assert.match(app, /const corrections=state\.orders\.filter\(order=>order\.operatorCorrectionPending\)/)
-  assert.match(app, /return\[\.\.\.corrections,\.\.\.approvals,\.\.\.requests,\.\.\.overdue\]/)
+test('Tümü sekmesi yalnızca aktif operatör işlerini, özel sekmeler kendi durumlarını gösterir', () => {
+  const start=app.indexOf('function operatorStatusMatches('),end=app.indexOf('function renderOperator(',start),context=vm.createContext({operatorStatus:''})
+  vm.runInContext(app.slice(start,end),context)
+  assert.equal(context.operatorStatusMatches({status:'Atandı'},''),true)
+  assert.equal(context.operatorStatusMatches({status:'Devam Ediyor'},''),true)
+  assert.equal(context.operatorStatusMatches({status:'Beklemede'},''),true)
+  assert.equal(context.operatorStatusMatches({status:'Teyit Bekliyor'},''),false)
+  assert.equal(context.operatorStatusMatches({status:'Tamamlandı'},''),false)
+  assert.equal(context.operatorStatusMatches({status:'Teyit Bekliyor'},'Teyit Bekliyor'),true)
+  assert.equal(context.operatorStatusMatches({status:'Tamamlandı'},'Tamamlandı'),true)
+  assert.equal(context.operatorStatusMatches({status:'Devam Ediyor'},'Tamamlandı'),false)
+})
+
+test('operatör düzeltme isteği yönetici takip bildirimine karışmaz ve Supabase doğrulanmadan gönderildi denmez', () => {
+  const notificationSource = app.slice(app.indexOf('function notificationItems('), app.indexOf('function closeNotifications('))
+  assert.doesNotMatch(notificationSource, /operatorCorrectionPending|Operatör Düzeltme İsteği/)
   assert.match(app, /o\.status==='Teyit Bekliyor'\|\|o\.operatorCorrectionPending/)
   assert.match(app, /await cloud\.pushOperatorOrder\(nextOrder\)/)
   assert.match(app, /const remote=await cloud\.pullOperatorState\(\),saved=/)
