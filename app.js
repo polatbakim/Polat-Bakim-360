@@ -809,21 +809,20 @@ function updateCounts(){
   const dueLimit=dateOffset(7),maintenanceCount=state.assets.filter(a=>{const next=assetNextMaintenance(a);return next&&next<=dueLimit}).length;if($('#navMaintenanceCount'))$('#navMaintenanceCount').textContent=maintenanceCount;
   $('#sidebarSource').textContent = state.source?.name || 'Yerel kayıtlar';
 }
+function notificationFollowUpRecords(){
+  const managementItems=managementTrackingOrders().map(managementFollowUpForOrder).filter(Boolean),manualItems=Array.isArray(state.followUps)?state.followUps:[];
+  return[...managementItems,...manualItems].filter(item=>item.status!=='completed'&&['today','overdue'].includes(followUpDueKind(item))).sort((a,b)=>String(a.dueAt||'').localeCompare(String(b.dueAt||''))||String(b.updatedAt||'').localeCompare(String(a.updatedAt||'')))
+}
 function notificationItems(){
-  if(accessRole!=='manager')return[];
-  const corrections=state.orders.filter(order=>order.operatorCorrectionPending).map(order=>({kind:'Operatör Düzeltme İsteği',title:order.title,detail:`${visibleWorkOrderNo(order)||order.id} · ${order.operatorCorrectionRequestedBy||'Operatör'} düzeltme istiyor`,view:'manager',id:order.id}));
-  const requests=state.orders.filter(isPendingRequest).map(order=>({kind:'İş Talebi',title:order.title,detail:`${order.id} · ${assetById(order.assetId).name}`,view:'requests',id:order.id}));
-  const approvals=state.orders.filter(order=>order.status==='Teyit Bekliyor').map(order=>({kind:'Yönetici Onayı',title:order.title,detail:`${visibleWorkOrderNo(order)||order.id} · Maliyet onayı bekliyor`,view:'manager',id:order.id}));
-  const management=managementTrackingOrders().map(order=>({kind:order.managementStatus,title:order.title,detail:`${visibleWorkOrderNo(order)||order.id} · ${formatDateTime(order.managementDueAt)} · ${approverById(order.managementOwnerId)?.name||'Sorumlu atanmamış'}`,view:'orders',id:order.id}));
-  const overdue=state.orders.filter(order=>isWorkOrder(order)&&isActive(order)&&order.status!=='Teyit Bekliyor'&&order.dueDate&&order.dueDate<today()).map(order=>({kind:'Geciken İş',title:order.title,detail:`${visibleWorkOrderNo(order)||order.id} · ${formatDate(order.dueDate)}`,view:'orders',id:order.id}));
-  return[...corrections,...approvals,...management,...requests,...overdue].filter(item=>canViewPage(item.view))
+  if(accessRole!=='manager'||!canViewPage('manager'))return[];
+  return notificationFollowUpRecords().map(item=>{const dueKind=followUpDueKind(item),owner=followUpOwner(item),dueLabel=dueKind==='overdue'?'Geciken Takip':'Bugünkü Takip';return{kind:`${dueLabel} · ${item.type||'Diğer'}`,title:item.title||'Takip konusu',detail:`${formatDateTime(item.dueAt)} · ${owner.name}${item.note?` · ${item.note}`:''}`,view:'manager',id:item.id,followUpId:item.id,dueKind}})
 }
 function closeNotifications(){const panel=$('#notificationPanel'),button=$('#notificationBtn');panel?.classList.add('hidden');button?.setAttribute('aria-expanded','false')}
 function renderNotifications(){
   const button=$('#notificationBtn'),panel=$('#notificationPanel'),badge=$('#notificationCount'),list=$('#notificationList');if(!button||!panel||!badge||!list)return;
   updateManagerPushButton();
-  const items=notificationItems();badge.textContent=items.length>99?'99+':String(items.length);badge.classList.toggle('hidden',!items.length);button.setAttribute('aria-label',items.length?`Bildirimler, ${items.length} bekleyen kayıt`:'Bildirimler, bekleyen kayıt yok');
-  list.innerHTML=items.length?items.map(item=>`<button type="button" class="notification-item" data-notification-view="${item.view}" data-notification-id="${escapeHtml(item.id)}"><span class="notification-kind">${escapeHtml(item.kind)}</span><strong>${escapeHtml(item.title)}</strong><small>${escapeHtml(item.detail)}</small></button>`).join(''):'<p class="notification-empty">Bekleyen bildirim yok.</p>';
+  const items=notificationItems();badge.textContent=items.length>99?'99+':String(items.length);badge.classList.toggle('hidden',!items.length);button.setAttribute('aria-label',items.length?`Bildirimler, ${items.length} günü gelmiş takip`:'Bildirimler, günü gelmiş takip yok');
+  list.innerHTML=items.length?items.map(item=>`<button type="button" class="notification-item" data-notification-view="${item.view}" data-notification-id="${escapeHtml(item.id)}" data-notification-follow-up="${escapeHtml(item.followUpId||'')}"><span class="notification-kind">${escapeHtml(item.kind)}</span><strong>${escapeHtml(item.title)}</strong><small>${escapeHtml(item.detail)}</small></button>`).join(''):'<p class="notification-empty">Bugün için takip bildirimi yok.</p>';
   if(accessRole!=='manager')closeNotifications()
 }
 
@@ -2270,7 +2269,7 @@ function openSimple(mode,id=''){
 }
 
 document.addEventListener('click',e=>{
-  const notificationLink=e.target.closest('[data-notification-view]');if(notificationLink){const {notificationView:view,notificationId:id}=notificationLink.dataset;closeNotifications();if(!canViewPage(view)){toast('Bu sayfa için görüntüleme yetkiniz yok.');return}switchView(view);if(view==='requests')showRequest(id);else showOrder(id);return}
+  const notificationLink=e.target.closest('[data-notification-view]');if(notificationLink){const {notificationView:view,notificationId:id,notificationFollowUp:followUpId}=notificationLink.dataset;closeNotifications();if(!canViewPage(view)){toast('Bu sayfa için görüntüleme yetkiniz yok.');return}switchView(view);if(followUpId){followUpOwnerFilter='all';followUpStatusFilter='all';followUpSearch=followUpId;renderFollowUps();setTimeout(()=>$('#followUpList')?.scrollIntoView({behavior:'smooth',block:'start'}),50)}else if(view==='requests')showRequest(id);else showOrder(id);return}
   if(e.target.closest('#notificationBtn')){renderNotifications();const panel=$('#notificationPanel'),opening=panel.classList.contains('hidden');panel.classList.toggle('hidden',!opening);$('#notificationBtn').setAttribute('aria-expanded',String(opening));return}
   if(e.target.closest('#notificationCloseBtn')){closeNotifications();return}
   if(!e.target.closest('.notification-area'))closeNotifications();
