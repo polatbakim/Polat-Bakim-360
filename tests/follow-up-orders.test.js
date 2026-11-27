@@ -65,11 +65,14 @@ test('takipten iş emri oluştururken normal aranabilir ekipman seçimi kullanı
 })
 
 test('bildirim numarası yeni iş emrinin görünen numarası olur', () => {
-  const start = app.indexOf('function visibleWorkOrderNo(')
+  const start = app.indexOf('function syncFollowUpOrderNotificationNumbers(')
   const end = app.indexOf('function orderRow(', start)
-  const context = vm.createContext({})
+  const context = vm.createContext({state:{followUps:[{id:'TKP-1',notificationNo:'10017326'}]}})
   vm.runInContext(app.slice(start, end), context)
   assert.equal(vm.runInContext("visibleWorkOrderNo({id:'IE-2026-0001',notificationNo:'10017325'})", context), '10017325')
+  assert.equal(vm.runInContext("visibleWorkOrderNo({id:'IE-2026-0002',notificationNo:'',sourceFollowUpId:'TKP-1'})", context), '10017326')
   assert.equal(vm.runInContext("visibleWorkOrderNo({id:'IE-2026-0002',notificationNo:''})", context), 'IE-2026-0002')
+  const target={followUps:[{id:'TKP-2',notificationNo:'10017327'}],orders:[{id:'IE-2026-0003',notificationNo:'',sourceFollowUpId:'TKP-2'}]};context.syncFollowUpOrderNotificationNumbers(target);assert.equal(target.orders[0].notificationNo,'10017327');assert.equal(target.orders[0].notificationStatus,'Var')
+  assert.match(app, /notificationNo=String\(followUp\.notificationNo\|\|f\.get\('notificationNo'\)\|\|''\)\.trim\(\)/)
   assert.match(app, /secondary=o\.ptNo\|\|o\.type\|\|o\.id/)
 })

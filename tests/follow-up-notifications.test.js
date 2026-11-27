@@ -56,5 +56,5 @@ test('bildirim paneli iş emri havuzu yerine takip kaynağını kullanır', () =
   assert.match(app, /followUpSearch=followUpId;renderFollowUps\(\)/)
   assert.match(app, /function checkNewOperatorAssignments\(\)/)
   assert.match(app, /title='Yeni iş emri atandı'/)
-  assert.match(html, /app\.js\?v=20261125-open-fault-tracking-v41/)
+  assert.match(html, /app\.js\?v=20261127-notification-priority-v42/)
 })
